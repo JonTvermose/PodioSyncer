@@ -11,16 +11,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="3.6.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
     <PackageReference Include="Podio.Async" Version="2.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\bundles\" />
     <Folder Include="wwwroot\bundles\css\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PodioSyncer.Data\PodioSyncer.Data.csproj" />
   </ItemGroup>
 
 </Project>
