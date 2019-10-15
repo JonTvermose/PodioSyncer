@@ -12,6 +12,7 @@
     "@types/node": "^12.7.12",
     "@types/react": "16.9.5",
     "@types/react-dom": "16.9.1",
+    "@types/styled-components": "^4.1.19",
     "bootstrap": "^4.3.1",
     "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^3.2.0",
@@ -26,6 +27,7 @@
     "sass-loader": "^8.0.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.0.0",
+    "styled-components": "^4.4.0",
     "ts-loader": "^6.2.0",
     "typescript": "^3.6.4",
     "webpack": "^4.41.1"

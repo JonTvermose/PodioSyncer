@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="client\components\podio-row\podio-row.tsx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\logo192.png" />
     <None Include="wwwroot\logo512.png" />
     <None Include="wwwroot\robots.txt" />
