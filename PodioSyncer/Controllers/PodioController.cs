@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PodioAPI;
 using PodioSyncer.Data;
+using PodioSyncer.Data.Models;
 using PodioSyncer.Models.Podio;
 using PodioSyncer.Options;
 
@@ -30,13 +31,14 @@ namespace PodioSyncer.Controllers
         {
             var podio = new Podio(_options.ClientId, _options.ClientSecret);
 
-            var appToken = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId)?.AppToken; 
-            await podio.AuthenticateWithApp(appId, appToken);
+            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId); 
+            await podio.AuthenticateWithApp(appId, app.AppToken);
 
             switch (hook.type)
             {
                 case "hook.verify":
                     await podio.HookService.ValidateHookVerification(int.Parse(hook.hook_id), hook.code);
+                    
                     break;
                 case "item.create":
                     var createdItem = await podio.ItemService.GetItem(int.Parse(hook.item_id));
@@ -48,6 +50,23 @@ namespace PodioSyncer.Controllers
                     break;
             }
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("getpodioapps")]
+        public async Task<IActionResult> GetPodioApps()
+        {
+            var podioApps = new List<PodioApp>(); // _queryDb.PodioApps.ToList(); // TODO
+            podioApps.Add(new PodioApp
+            {
+                Name = "Test1",
+                PodioAppId = 354636,
+                Verified = false,
+                Active = true,
+                Id = 1,
+                WebhookUrl = Url.Action("Webhook", "Podio")
+            });
+            return Ok(podioApps);
         }
 
     }

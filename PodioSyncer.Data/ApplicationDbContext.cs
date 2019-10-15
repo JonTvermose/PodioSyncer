@@ -8,9 +8,12 @@ namespace PodioSyncer.Data
 {
     public class ApplicationDbContext : DbContext
     {
+        public ApplicationDbContext(DbContextOptions options) : base(options)
+        {
+        }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=.\SQLEXPRESS2017;Database=PodioSyncer;Integrated Security=True");
         }
 
         public DbSet<PodioApp> PodioApps { get; set; }

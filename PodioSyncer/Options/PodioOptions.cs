@@ -9,7 +9,5 @@ namespace PodioSyncer.Options
     {
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
-        public int[] AppIds { get; set; }
-        public string[] AppTokens{ get; set; }
     }
 }

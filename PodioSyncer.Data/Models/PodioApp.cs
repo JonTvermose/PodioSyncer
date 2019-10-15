@@ -10,5 +10,9 @@ namespace PodioSyncer.Data.Models
         public int PodioAppId { get; set; }
         public string Name { get; set; }
         public string AppToken { get; set; }
+        public bool Verified { get; set; }
+        public bool Active { get; set; }
+        public string WebhookUrl { get; set; }
+
     }
 }

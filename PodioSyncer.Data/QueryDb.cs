@@ -12,6 +12,7 @@ namespace PodioSyncer.Data
 
         public QueryDb(ApplicationDbContext dbContext)
         {
+            _dbContext = dbContext;
             _dbContext.ChangeTracker.QueryTrackingBehavior = Microsoft.EntityFrameworkCore.QueryTrackingBehavior.NoTracking;
             _dbContext = dbContext;
         }

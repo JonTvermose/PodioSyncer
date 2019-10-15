@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <None Remove="client\components\podio-row\podio-row.tsx" />
+    <None Remove="client\models\PodioAppModel.ts" />
+    <None Remove="client\pages\podioapps.tsx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +23,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.0.0" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="3.6.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -30,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="client\services\" />
     <Folder Include="wwwroot\bundles\" />
     <Folder Include="wwwroot\bundles\css\" />
   </ItemGroup>

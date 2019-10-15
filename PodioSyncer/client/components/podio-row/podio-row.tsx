@@ -19,9 +19,7 @@ border-radius: 10px;
 `;
 
 export const PodioRow: FunctionComponent<PodioRowProps> = (podioProps) => {
-
-
-
+    
     return (
         <div className="row">
             <div className="col-3">{podioProps.name}</div>
@@ -29,7 +27,7 @@ export const PodioRow: FunctionComponent<PodioRowProps> = (podioProps) => {
             <div className="col-3">{podioProps.webhookUrl}</div>
             <div className="col-1"><StatusDiv active={podioProps.status} /></div>
             <div className="col-1"><StatusDiv active={podioProps.verified} /></div>
-            <div className="col-1" onClick={() => podioProps.onEdit(podioProps.appId)}>Edit</div>
-            <div className="col-1" onClick={() => podioProps.onDelete(podioProps.appId)}>Delete</div>
+            <div className="col-1" onClick={() => podioProps.onEdit(podioProps.appId)}><button className="btn btn-sm btn-primary">Edit</button></div>
+            <div className="col-1" onClick={() => podioProps.onDelete(podioProps.appId)}><button className="btn btn-sm btn-danger">Delete</button></div>
         </div>)
 }
