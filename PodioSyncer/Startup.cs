@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PodioSyncer.Data;
+using PodioSyncer.Data.Commands;
 using PodioSyncer.Options;
 
 namespace PodioSyncer
@@ -35,6 +36,9 @@ namespace PodioSyncer
             services.AddTransient<ConfigurationOptions>();
             services.AddTransient<QueryDb>();
 
+            // Commands
+            services.AddTransient<VerifyWebhookCommand>();
+            services.AddTransient<CreatePodioApp>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
