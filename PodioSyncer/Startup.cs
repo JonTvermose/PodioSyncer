@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
+using PodioSyncer.Mappings;
 using PodioSyncer.Options;
 
 namespace PodioSyncer
@@ -31,6 +33,9 @@ namespace PodioSyncer
 
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetSection("ConnectionStrings")["DefaultConnection"]));
 
+            // Automapper
+            services.AddAutoMapper(new Type[] { typeof(MappingProfile) });
+
             // Dependency injection
             services.Configure<ConfigurationOptions>(Configuration);
             services.AddTransient<ConfigurationOptions>();
@@ -39,6 +44,7 @@ namespace PodioSyncer
             // Commands
             services.AddTransient<VerifyWebhookCommand>();
             services.AddTransient<CreatePodioApp>();
+            services.AddTransient<UpdatePodioApp>();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

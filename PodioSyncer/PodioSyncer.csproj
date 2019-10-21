@@ -5,8 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="client\components\loading-spinner.tsx" />
     <None Remove="client\components\podio-row\podio-row.tsx" />
     <None Remove="client\models\PodioAppModel.ts" />
+    <None Remove="client\pages\createpodioapp.tsx" />
     <None Remove="client\pages\podioapps.tsx" />
   </ItemGroup>
 
@@ -17,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -40,6 +43,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PodioSyncer.Data\PodioSyncer.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Update="client\pages\createpodioapp.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
   </ItemGroup>
 
 </Project>

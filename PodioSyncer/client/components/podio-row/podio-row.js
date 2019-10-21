@@ -14,7 +14,9 @@ export var PodioRow = function (podioProps) {
             React.createElement(StatusDiv, { active: podioProps.status })),
         React.createElement("div", { className: "col-1" },
             React.createElement(StatusDiv, { active: podioProps.verified })),
-        React.createElement("div", { className: "col-1", onClick: function () { return podioProps.onEdit(podioProps.appId); } }, "Edit"),
-        React.createElement("div", { className: "col-1", onClick: function () { return podioProps.onDelete(podioProps.appId); } }, "Delete")));
+        React.createElement("div", { className: "col-1", onClick: function () { return podioProps.onEdit(podioProps.appId); } },
+            React.createElement("button", { className: "btn btn-sm btn-primary" }, "Edit")),
+        React.createElement("div", { className: "col-1", onClick: function () { return podioProps.onDelete(podioProps.appId); } },
+            React.createElement("button", { className: "btn btn-sm btn-danger" }, "Delete"))));
 };
 var templateObject_1;

@@ -16,21 +16,28 @@ namespace PodioSyncer.Data.Commands
         }
 
         protected override void RunCommand()
-        {
-            PodioApp podioApp = null;
-            if (InputModel.PodioAppId.HasValue)
-            {
-                podioApp = dbContext.PodioApps.SingleOrDefault(x => x.PodioAppId == InputModel.PodioAppId); // eksploderer hvis der er 2 i databasen
-            }
+        {            
+            PodioApp podioApp = dbContext.PodioApps.SingleOrDefault(x => x.PodioAppId == InputModel.PodioAppId); ;
             if (podioApp != null)
-                throw new ArgumentException(nameof(InputModel.PodioAppId)); // eksploderer hvis der er 1 i databasen 
+                throw new ArgumentException(nameof(InputModel.PodioAppId));
 
-            // Her opretter vi en ny en, den findes ikke i databasen i forvejen
+            if (string.IsNullOrWhiteSpace(InputModel.Name))
+                throw new ArgumentNullException(nameof(InputModel.Name));
+
+            if (string.IsNullOrWhiteSpace(InputModel.AppToken))
+                throw new ArgumentNullException(nameof(InputModel.AppToken));
+
+            if (string.IsNullOrWhiteSpace(InputModel.PodioAppId))
+                throw new ArgumentNullException(nameof(InputModel.PodioAppId));
+
+            if (!int.TryParse(InputModel.PodioAppId, out var appId))
+                throw new ArgumentException($"{nameof(InputModel.PodioAppId)} MUST be a number");
+
             podioApp = new PodioApp
             {
                 AppToken = InputModel.AppToken,
                 Name = InputModel.Name,
-                PodioAppId = InputModel.PodioAppId.Value 
+                PodioAppId = InputModel.PodioAppId                
             };
             dbContext.PodioApps.Add(podioApp);
             dbContext.SaveChanges();

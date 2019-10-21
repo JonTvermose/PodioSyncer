@@ -46,6 +46,13 @@
         </div>
     </footer>
     <script src="~/bundles/app.js" asp-append-version="true"></script>
+    <script>
+        var jsonRoutes = {
+            getpodioapps: '@Url.Action("GetPodioApps", "Podio")',
+            createpodioapp: '@Url.Action("CreatePodioApp", "Podio")',
+            updatepodioapp: '@Url.Action("UpdatePodioApp", "Podio")',
+        };
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

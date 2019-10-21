@@ -1,5 +1,5 @@
 ﻿ export interface PodioAppModel {
-    podioAppId: number;
+    podioAppId: string;
     name: string;
     verified: boolean;
     active: boolean;

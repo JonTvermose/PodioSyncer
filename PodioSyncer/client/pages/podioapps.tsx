@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { PodioRow } from "../components/podio-row/podio-row";
 import { PodioAppModel } from "../models/PodioAppModel";
 
+declare const jsonRoutes: any;
 
 type PodioAppProps = {
 }
@@ -11,16 +12,16 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
     const [podioApps, setPodioApps] = useState<PodioAppModel[]>([]);
 
     useEffect(() => {
-        fetch("https://localhost:44391/api/podio/getpodioapps")
+        fetch(jsonRoutes["getpodioapps"])
             .then(res => res.json())
             .then(res => setPodioApps(res));
     }, []);
 
-    const handleOnEdit = (appId: number): void => {
+    const handleOnEdit = (appId: string): void => {
         console.log("Edit clicked for Podio App Id: " + appId);
     };
 
-    const handleOnDelete = (appId: number): void => {
+    const handleOnDelete = (appId: string): void => {
         console.log("Delete clicked for Podio App Id: " + appId);
     };
 

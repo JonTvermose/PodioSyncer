@@ -3,12 +3,12 @@ import styled from 'styled-components';
 
 type PodioRowProps = {
     name: string,
-    appId: number,
+    appId: string,
     webhookUrl: string,
     status: boolean,
     verified: boolean,
-    onEdit(appId: number): void,
-    onDelete(appId: number): void
+    onEdit(appId: string): void,
+    onDelete(appId: string): void
 }
 
 const StatusDiv = styled.div<{ active: boolean }>`
