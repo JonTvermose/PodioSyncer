@@ -4,21 +4,15 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
 };
 import React from 'react';
 import posed from "react-pose";
-import { BeatLoader } from "react-spinners";
+import { PulseLoader } from "react-spinners";
 import { css } from "@emotion/core";
-var OverLayDiv = posed.div({
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 },
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
-    zIndex: 9
+var PosedDiv = posed.div({
+    hidden: { opacity: 0, zIndex: -1 },
+    visible: { opacity: 1, zIndex: 9 }
 });
-var override = css(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\nz-index: 99;\nmargin: 50vh auto;\n"], ["\nz-index: 99;\nmargin: 50vh auto;\n"])));
+var override = css(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\nz-index: 99;\ndisplay: inline-block;\nmargin-left: 50vw;\nmargin-top: 50vh;\n"], ["\nz-index: 99;\ndisplay: inline-block;\nmargin-left: 50vw;\nmargin-top: 50vh;\n"])));
 export var LoadingSpinner = function (props) {
-    return (React.createElement(OverLayDiv, { pose: props.isLoading ? "visible" : "hidden" },
-        React.createElement(BeatLoader, { css: override, loading: props.isLoading, color: "50E3C2" })));
+    return (React.createElement(PosedDiv, { style: { position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9, backgroundColor: "rgba(0,0,0,0.25)" }, pose: props.isLoading ? "visible" : "hidden" },
+        React.createElement(PulseLoader, { css: override, loading: props.isLoading })));
 };
 var templateObject_1;

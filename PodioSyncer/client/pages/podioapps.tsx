@@ -1,5 +1,7 @@
 ﻿import React, { FunctionComponent, useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
+
 import { PodioRow } from "../components/podio-row/podio-row";
 import { PodioAppModel } from "../models/PodioAppModel";
 
@@ -27,15 +29,10 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
 
     return (
         <div className="container">
-            <h3>List of podio apps</h3>
-            {podioApps.map((app, index) =>
-                <PodioRow key={index}
-                    appId={app.podioAppId}
-                    name={app.name}
-                    verified={app.verified}
-                    status={app.active}
-                    webhookUrl=""
-                    onEdit={handleOnEdit}
-                    onDelete={handleOnDelete} />)}
+            <h3>List of podio apps <Link to="/create"><button className="btn btn-primary float-right">Create new</button></Link></h3>
+            <PodioRow 
+                rows={podioApps}
+                onEdit={handleOnEdit}
+                onDelete={handleOnDelete} />
         </div>)
 }
