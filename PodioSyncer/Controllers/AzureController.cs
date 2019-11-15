@@ -10,21 +10,21 @@ using PodioAPI;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
-using PodioSyncer.Models.Podio;
+using PodioSyncer.Models.DevOps;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
 
 namespace PodioSyncer.Controllers
 {
-    [Route("api/podio")]
+    [Route("api/azure")]
     [ApiController]
-    public class PodioController : ControllerBase
+    public class AzureController : ControllerBase
     {
         private readonly PodioOptions _options;
         private readonly QueryDb _queryDb;
         private readonly IMapper _mapper;
 
-        public PodioController(ConfigurationOptions options, QueryDb queryDb, IMapper mapper)
+        public AzureController(ConfigurationOptions options, QueryDb queryDb, IMapper mapper)
         {
             _options = options.PodioOptions;
             _queryDb = queryDb;
@@ -32,26 +32,16 @@ namespace PodioSyncer.Controllers
         }
 
         [HttpPost]
-        [Route("webhook/{appId}")]
-        public async Task<IActionResult> Webhook(int appId, PodioWebhook hook, [FromServices] VerifyWebhookCommand verifyCommand)
-        {
-            var podio = new Podio(_options.ClientId, _options.ClientSecret);
-            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId.ToString()); 
-            await podio.AuthenticateWithApp(appId, app.AppToken);
-
-            switch (hook.type)
+        [Route("webhook")]
+        public async Task<IActionResult> Webhook(AzureItem item)
+        {            
+            switch (item.EventType)
             {
-                case "hook.verify":
-                    await podio.HookService.ValidateHookVerification(int.Parse(hook.hook_id), hook.code);
-                    verifyCommand.PodioAppId = appId;
-                    verifyCommand.Run();
+                case "workitem.updated":
                     break;
                 case "item.create":
-                    var createdItem = await podio.ItemService.GetItem(int.Parse(hook.item_id));
                     break;
                 case "item.update":
-                    var updatedItem = await podio.ItemService.GetItem(int.Parse(hook.item_id));
-                    updatedItem.CurrentRevision.
                     break;
                 case "item.delete":
                     break;
