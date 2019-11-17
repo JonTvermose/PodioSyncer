@@ -6,10 +6,15 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 using PodioAPI;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
+using PodioSyncer.Data.Models;
 using PodioSyncer.Models.Podio;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
@@ -20,24 +25,30 @@ namespace PodioSyncer.Controllers
     [ApiController]
     public class PodioController : ControllerBase
     {
-        private readonly PodioOptions _options;
+        private readonly ConfigurationOptions _options;
         private readonly QueryDb _queryDb;
         private readonly IMapper _mapper;
 
         public PodioController(ConfigurationOptions options, QueryDb queryDb, IMapper mapper)
         {
-            _options = options.PodioOptions;
+            _options = options;
             _queryDb = queryDb;
             _mapper = mapper;
         }
 
         [HttpPost]
         [Route("webhook/{appId}")]
-        public async Task<IActionResult> Webhook(int appId, PodioWebhook hook, [FromServices] VerifyWebhookCommand verifyCommand)
+        public async Task<IActionResult> Webhook(int appId, PodioWebhook hook, [FromServices] VerifyWebhookCommand verifyCommand, [FromServices] CreateLink createLinkCommand, [FromServices] UpdateLink updateLinkCommand)
         {
-            var podio = new Podio(_options.ClientId, _options.ClientSecret);
+            var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
             var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId.ToString()); 
             await podio.AuthenticateWithApp(appId, app.AppToken);
+
+            var item = await podio.ItemService.GetItem(int.Parse(hook.item_id));
+            var link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
+
+            VssConnection connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
+            var witClient = connection.GetClient<WorkItemTrackingHttpClient>();
 
             switch (hook.type)
             {
@@ -47,11 +58,43 @@ namespace PodioSyncer.Controllers
                     verifyCommand.Run();
                     break;
                 case "item.create":
-                    var createdItem = await podio.ItemService.GetItem(int.Parse(hook.item_id));
+                    if(link != null)
+                    {
+                        // TODO Shouldnt happen
+                    }
+                   
+                    var createResult = await witClient.CreateWorkItemAsync(null, null, ""); // TODO
+
+                    link = new PodioAzureItemLink
+                    {
+                        AzureId = createResult.Id.Value,
+                        AzureRevision = createResult.Rev.Value,
+                        PodioId = item.ItemId,
+                        PodioRevision = item.CurrentRevision.Revision
+                    };
+                    createLinkCommand.InputModel = link;
+                    createLinkCommand.Run();
+
                     break;
                 case "item.update":
-                    var updatedItem = await podio.ItemService.GetItem(int.Parse(hook.item_id));
-                    updatedItem.CurrentRevision.
+                    var revision = item.CurrentRevision.Revision;
+                    if(link == null)
+                    {
+                        // TODO Shouldnt happpen
+                        // Will happen for items allready created before implementing this system
+                    } else if (link.PodioRevision >= revision)
+                    {
+                        // Allready processed this revision
+                        return Ok();
+                    }
+                    var wItem = await witClient.UpdateWorkItemAsync(null, link.AzureId);
+
+                    // TODO update item
+                    // update link revisions to avoid infinite loops
+                    link.PodioRevision = revision;
+                    link.AzureRevision = wItem.Rev.Value;
+                    updateLinkCommand.InputModel = link;
+                    updateLinkCommand.Run();
                     break;
                 case "item.delete":
                     break;

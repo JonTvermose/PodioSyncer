@@ -6,6 +6,11 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
+using Microsoft.VisualStudio.Services.Client;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 using PodioAPI;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
@@ -20,13 +25,12 @@ namespace PodioSyncer.Controllers
     [ApiController]
     public class AzureController : ControllerBase
     {
-        private readonly PodioOptions _options;
         private readonly QueryDb _queryDb;
         private readonly IMapper _mapper;
 
         public AzureController(ConfigurationOptions options, QueryDb queryDb, IMapper mapper)
         {
-            _options = options.PodioOptions;
+            //_options = options.PodioOptions;
             _queryDb = queryDb;
             _mapper = mapper;
         }
@@ -34,16 +38,20 @@ namespace PodioSyncer.Controllers
         [HttpPost]
         [Route("webhook")]
         public async Task<IActionResult> Webhook(AzureItem item)
-        {            
+        {
+
+            var link = _queryDb.Links.SingleOrDefault(x => x.AzureId == item.Resource.WorkItemId);
+            if (link == null)
+            {
+                return Ok();
+            }
             switch (item.EventType)
             {
                 case "workitem.updated":
+                    // TODO update podio item
                     break;
-                case "item.create":
-                    break;
-                case "item.update":
-                    break;
-                case "item.delete":
+                case "workitem.deleted":
+                    // TODO update podio item, add comment that Azure item has been deleted
                     break;
             }
             return Ok();

@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PodioSyncer.Data;
 
 namespace PodioSyncer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20191117122508_AddedMappings")]
+    partial class AddedMappings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,15 +59,10 @@ namespace PodioSyncer.Data.Migrations
                     b.Property<int>("FieldType")
                         .HasColumnType("int");
 
-                    b.Property<int>("PodioAppId")
-                        .HasColumnType("int");
-
                     b.Property<string>("PodioFieldName")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PodioAppId");
 
                     b.ToTable("FieldMappings");
                 });
@@ -133,15 +130,6 @@ namespace PodioSyncer.Data.Migrations
                     b.HasOne("PodioSyncer.Data.Models.FieldMapping", "FieldMapping")
                         .WithMany("CategoryMappings")
                         .HasForeignKey("FieldMappingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("PodioSyncer.Data.Models.FieldMapping", b =>
-                {
-                    b.HasOne("PodioSyncer.Data.Models.PodioApp", "PodioApp")
-                        .WithMany("FieldMappings")
-                        .HasForeignKey("PodioAppId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

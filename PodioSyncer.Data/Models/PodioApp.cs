@@ -12,6 +12,7 @@ namespace PodioSyncer.Data.Models
         public string AppToken { get; set; }
         public bool Verified { get; set; }
         public bool Active { get; set; }
-
+        public ICollection<PodioAzureItemLink> PodioAzureItemLinks { get; set; }
+        public ICollection<FieldMapping> FieldMappings { get; set; }
     }
 }

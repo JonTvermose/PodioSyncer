@@ -18,5 +18,8 @@ namespace PodioSyncer.Data
         }
 
         public IQueryable<PodioApp> PodioApps => _dbContext.PodioApps;
+        public IQueryable<PodioAzureItemLink> Links => _dbContext.PodioAzureItemLinks;
+        public IQueryable<FieldMapping> FieldMappings => _dbContext.FieldMappings;
+        public IQueryable<CategoryMapping> CategoryMappings => _dbContext.CategoryMappings;
     }
 }

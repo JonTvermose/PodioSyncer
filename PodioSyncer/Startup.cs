@@ -44,7 +44,10 @@ namespace PodioSyncer
             // Commands
             services.AddTransient<VerifyWebhookCommand>();
             services.AddTransient<CreatePodioApp>();
-            services.AddTransient<UpdatePodioApp>();            
+            services.AddTransient<UpdatePodioApp>();
+            services.AddTransient<CreateLink>();
+            services.AddTransient<UpdateLink>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

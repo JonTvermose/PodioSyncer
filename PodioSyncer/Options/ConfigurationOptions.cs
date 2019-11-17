@@ -8,5 +8,6 @@ namespace PodioSyncer.Options
     public class ConfigurationOptions
     {
         public PodioOptions PodioOptions { get; set; }
+        public AzureOptions AzureOptions { get; set; }
     }
 }

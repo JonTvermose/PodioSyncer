@@ -1,4 +1,6 @@
-﻿using PodioAPI.Models;
+﻿using Microsoft.VisualStudio.Services.WebApi.Patch;
+using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
+using PodioAPI.Models;
 using PodioAPI.Utils.ItemFields;
 using System;
 using System.Collections.Generic;
@@ -64,6 +66,25 @@ namespace PodioSyncer.Models.Podio
                     FileContents = fileResponse.FileContents
                 });
             }
+        }
+
+        public JsonPatchDocument GetUpdatedFields()
+        {
+            var patchDocument = new JsonPatchDocument();
+
+            if(Summary != null)
+            {
+                patchDocument.Add(
+                   new JsonPatchOperation()
+                   {
+                       Operation = Operation.Add,
+                       Path = "/fields/System.Title",
+                       Value = "Sample task 1"
+                   }
+                );
+            }
+
+            return patchDocument;
         }
     }
 }
