@@ -6,6 +6,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.Common;
@@ -15,6 +16,7 @@ using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
 using PodioSyncer.Data.Models;
+using PodioSyncer.Extensions;
 using PodioSyncer.Models.Podio;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
@@ -29,9 +31,9 @@ namespace PodioSyncer.Controllers
         private readonly QueryDb _queryDb;
         private readonly IMapper _mapper;
 
-        public PodioController(ConfigurationOptions options, QueryDb queryDb, IMapper mapper)
+        public PodioController(IOptionsMonitor<ConfigurationOptions> options, QueryDb queryDb, IMapper mapper)
         {
-            _options = options;
+            _options = options.CurrentValue;
             _queryDb = queryDb;
             _mapper = mapper;
         }
@@ -41,10 +43,11 @@ namespace PodioSyncer.Controllers
         public async Task<IActionResult> Webhook(int appId, PodioWebhook hook, [FromServices] VerifyWebhookCommand verifyCommand, [FromServices] CreateLink createLinkCommand, [FromServices] UpdateLink updateLinkCommand)
         {
             var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
-            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId.ToString()); 
+            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId.ToString());             
             await podio.AuthenticateWithApp(appId, app.AppToken);
 
             var item = await podio.ItemService.GetItem(int.Parse(hook.item_id));
+            var result = await item.GetChangesAsync(_queryDb, null, podio);
             var link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
 
             VssConnection connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));

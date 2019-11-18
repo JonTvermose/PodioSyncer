@@ -13,6 +13,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using PodioSyncer.Data.Models;
 using PodioAPI.Utils.ApplicationFields;
+using PodioSyncer.Models.Podio;
+using Newtonsoft.Json.Linq;
 
 namespace PodioSyncer.Extensions
 {
@@ -26,15 +28,14 @@ namespace PodioSyncer.Extensions
             var mappings = queryDb.FieldMappings.Include(x => x.CategoryMappings).ToList();
             foreach (var field in item.Fields)
             {
-                var mapping = mappings.SingleOrDefault(x => x.PodioFieldName == field.Label);
+                var mapping = mappings.SingleOrDefault(x => x.PodioFieldName == field.ExternalId);
                 if (mapping == null)
                     continue;
 
                 switch (mapping.FieldType)
                 {
                     case FieldType.Image:
-                        var images = item.Field<ImageItemField>(field.ExternalId)?.Images.ToList();
-                        foreach (var file in images)
+                        foreach (var file in item.Field<ImageItemField>(field.ExternalId)?.Images.ToList())
                         {
                             FileResponse fileResponse = await podio.FileService.DownloadFile(file);
 
@@ -61,7 +62,7 @@ namespace PodioSyncer.Extensions
                     case FieldType.File:
                         break;
                     case FieldType.User:
-                        var userField = (ContactItemField)field;
+                        var userField = item.Field<ContactItemField>(field.ExternalId);
                         var contact = userField.Contacts.FirstOrDefault();
                         string commentText = "";
                         if(queryDb.Links.Any(x => x.PodioId == item.ItemId))
@@ -70,7 +71,6 @@ namespace PodioSyncer.Extensions
                         } else
                         {
                             commentText = $"Created by {contact.Name}";
-
                         }
                         patchDocument.Add(
                             new JsonPatchOperation()
@@ -81,10 +81,9 @@ namespace PodioSyncer.Extensions
                             }
                         );
                         break;
-                    case FieldType.Category:
-                        var categoryField = item.Field<CategoryItemField>(field.ExternalId);
-                        var categoryValue = categoryField.Values.First().Value<string>("text");
-                        var mappedValue = mapping.CategoryMappings.SingleOrDefault(x => x.PodioValue == categoryValue)?.AzureValue;
+                    case FieldType.Category:                        
+                        var categoryValue = field.Values.ToObject<PodioValue[]>();
+                        var mappedValue = mapping.CategoryMappings.SingleOrDefault(x => x.PodioValue == categoryValue[0].Value.Text)?.AzureValue;
                         patchDocument.Add(
                             new JsonPatchOperation()
                             {
@@ -97,8 +96,7 @@ namespace PodioSyncer.Extensions
                     case FieldType.Boolean:
                         break;
                     case FieldType.Int:
-                        var numberField = (NumericItemField)field;
-                        var numberValue = numberField.Value.HasValue ? numberField.Value.Value.ToString() : "0.0";
+                        var numberValue = field.Values.First().Value<string>("value");
                         patchDocument.Add(
                             new JsonPatchOperation()
                             {
@@ -109,18 +107,18 @@ namespace PodioSyncer.Extensions
                         );
                         break;
                     case FieldType.String:
-                        var stringField = (TextItemField)field;
+                        var stringValue = field.Values.First().Value<string>("value");
                         patchDocument.Add(
                             new JsonPatchOperation()
                             {
                                 Operation = Operation.Add,
                                 Path = $"/fields/{mapping.AzureFieldName}",
-                                Value = stringField.Value
+                                Value = stringValue
                             }
                         );
                         break;
                     case FieldType.Date:
-                        var dateField = (DateItemField)field;
+                        var dateField = item.Field<DateItemField>(field.ExternalId);
                         var dateValue = dateField.Start.HasValue ? dateField.Start.Value : dateField.End.HasValue ? dateField.End.Value : DateTime.UtcNow;
                         patchDocument.Add(
                             new JsonPatchOperation()
