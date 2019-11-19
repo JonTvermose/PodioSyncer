@@ -10,9 +10,9 @@ namespace PodioSyncer.Data.Models
         public string AzureFieldName { get; set; }
         public string PodioFieldName { get; set; }
         public FieldType FieldType { get; set; }
-        public int PodioAppId { get; set; }
-        public PodioApp PodioApp { get; set; }
         public ICollection<CategoryMapping> CategoryMappings { get; set; }
+        public int TypeMappingId { get; set; }
+        public TypeMapping TypeMapping { get; set; }
     }
 
     public enum FieldType

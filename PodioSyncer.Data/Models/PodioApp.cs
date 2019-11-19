@@ -13,6 +13,7 @@ namespace PodioSyncer.Data.Models
         public bool Verified { get; set; }
         public bool Active { get; set; }
         public ICollection<PodioAzureItemLink> PodioAzureItemLinks { get; set; }
-        public ICollection<FieldMapping> FieldMappings { get; set; }
+        public ICollection<TypeMapping> TypeMappings { get; set; }
+
     }
 }

@@ -14,6 +14,7 @@ using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Mappings;
 using PodioSyncer.Options;
+using PodioSyncer.Services;
 
 namespace PodioSyncer
 {
@@ -29,9 +30,8 @@ namespace PodioSyncer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
-
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetSection("ConnectionStrings")["DefaultConnection"]));
+            services.AddControllersWithViews();
 
             // Automapper
             services.AddAutoMapper(new Type[] { typeof(MappingProfile) });
@@ -40,14 +40,14 @@ namespace PodioSyncer
             services.Configure<ConfigurationOptions>(Configuration);
             services.AddTransient<ConfigurationOptions>();
             services.AddTransient<QueryDb>();
+            services.AddTransient<SyncService>();
 
             // Commands
             services.AddTransient<VerifyWebhookCommand>();
             services.AddTransient<CreatePodioApp>();
             services.AddTransient<UpdatePodioApp>();
             services.AddTransient<CreateLink>();
-            services.AddTransient<UpdateLink>();
-            
+            services.AddTransient<UpdateLink>();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -15,7 +15,7 @@ namespace PodioSyncer.Data.Commands
         
         protected override void RunCommand()
         {
-            if (InputModel.AzureId == 0 || InputModel.PodioId == 0 || InputModel.PodioRevision == 0 || InputModel.AzureRevision == 0)
+            if (InputModel == null)
                 throw new ArgumentException(nameof(InputModel));
 
             dbContext.PodioAzureItemLinks.Add(InputModel);
