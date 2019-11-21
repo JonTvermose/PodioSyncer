@@ -13,6 +13,7 @@ using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Models;
 using PodioSyncer.Extensions;
 using PodioSyncer.Models.Podio;
+using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
 using System;
 using System.Collections.Generic;
@@ -35,11 +36,37 @@ namespace PodioSyncer.Services
             _mapper = mapper;
         }
 
+        public async Task<string> SyncPodioItemToAzure(PodioSyncItemViewModel model, CreateLink createLinkCommand)
+        {
+            var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
+            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == model.PodioAppId);
+            await podio.AuthenticateWithApp(model.PodioAppId, app.AppToken);
+
+            var url = new Uri(model.PodioItemUrl);
+            var appItemId = int.Parse(url.AbsolutePath.Split('/').Last());
+            var item = await podio.ItemService.GetItemByAppItemId(model.PodioAppId, appItemId);
+            var link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
+
+            VssConnection connection = null;
+            WorkItemTrackingHttpClient witClient = null;
+            var type = item.GetAzureType(app);
+            if (type == null)
+            {
+                throw new Exception($"Podio type not mapped.");
+            }
+            connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
+            witClient = connection.GetClient<WorkItemTrackingHttpClient>();
+            var azureUrl = await CreateAzureItem(podio, item, witClient, createLinkCommand, app);
+            return azureUrl;
+        }
+
         public async Task HandlePodioHook(int appId, PodioWebhook hook, VerifyWebhookCommand verifyCommand, CreateLink createLinkCommand, UpdateLink updateLinkCommand)
         {
             var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
-            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId.ToString());
+            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == appId);
             await podio.AuthenticateWithApp(appId, app.AppToken);
+
+            //var item = await podio.ItemService.GetItemByAppItemId(appId, int.Parse(hook.item_id));
 
             var item = await podio.ItemService.GetItem(int.Parse(hook.item_id));
             var link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
@@ -56,7 +83,7 @@ namespace PodioSyncer.Services
                     verifyCommand.Run();
                     break;
                 case "item.create":
-                    type = item.GetAzureType();
+                    type = item.GetAzureType(app);
                     if (type == null)
                     {
                         // No need to create a devops item.
@@ -64,7 +91,7 @@ namespace PodioSyncer.Services
                     }
                     connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
                     witClient = connection.GetClient<WorkItemTrackingHttpClient>();
-                    link = await CreateAzureItem(app.Id, podio, item, witClient, createLinkCommand);
+                    await CreateAzureItem(podio, item, witClient, createLinkCommand, app);
                     break;
                 case "item.update":
                     var revision = item.CurrentRevision.Revision;
@@ -73,22 +100,26 @@ namespace PodioSyncer.Services
                         // Allready processed this revision
                         return;
                     }
-                    type = item.GetAzureType();
+                    type = item.GetAzureType(app);
                     connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
                     witClient = connection.GetClient<WorkItemTrackingHttpClient>();
                     if (link == null && type != null)
                     {
                         // Will happen for items allready created before implementing this system or if their type is set to a type we should handle
-                        await CreateAzureItem(app.Id, podio, item, witClient, createLinkCommand);
+                        await CreateAzureItem(podio, item, witClient, createLinkCommand, app);
                         return;
                     }
-                    var changes = await item.GetChangesAsync(_queryDb, witClient, podio);
-                    var commentUpdates = await UpdateAzureComments(item, witClient, link);
-                    changes.AddRange(commentUpdates.AsEnumerable());
+                    var changes = await item.GetChangesAsync(_queryDb, witClient, podio, app);
+                    var syncChanges = await podio.ItemService.GetItemRevisionDifference(int.Parse(hook.item_id), link.PodioRevision, revision);                    
+                    foreach(var change in syncChanges)
+                    {
+                        var map = change.ExternalId; // Get mapping
+                        var changeValue = change.To.ToObject<PodioValue>().Value.Text;
+                    }
                     var wItem = await witClient.UpdateWorkItemAsync(changes, link.AzureId);
-                    // update link revisions to avoid infinite loops
+                    var updateRevision = await UpdateAzureComments(item, witClient, link);
+                    link.AzureRevision = updateRevision; 
                     link.PodioRevision = revision;
-                    link.AzureRevision = wItem.Rev.Value; // TODO should this be +1 ?
                     updateLinkCommand.InputModel = link;
                     updateLinkCommand.Run();
                     break;
@@ -97,10 +128,10 @@ namespace PodioSyncer.Services
             }
         }
 
-        private async Task<PodioAzureItemLink> CreateAzureItem(int appId, Podio podio, Item item, WorkItemTrackingHttpClient witClient, CreateLink createLinkCommand)
+        private async Task<string> CreateAzureItem(Podio podio, Item item, WorkItemTrackingHttpClient witClient, CreateLink createLinkCommand, PodioApp app)
         {
-            var patchOperations = await item.GetChangesAsync(_queryDb, witClient, podio);
-            var createResult = await witClient.CreateWorkItemAsync(patchOperations, _options.AzureOptions.ProjectGuid, item.GetAzureType());
+            var patchOperations = await item.GetChangesAsync(_queryDb, witClient, podio, app);
+            var createResult = await witClient.CreateWorkItemAsync(patchOperations, _options.AzureOptions.ProjectGuid, item.GetAzureType(app), suppressNotifications: true);
 
             var link = new PodioAzureItemLink
             {
@@ -108,24 +139,20 @@ namespace PodioSyncer.Services
                 PodioId = item.ItemId,
                 PodioRevision = item.CurrentRevision.Revision,
                 AzureRevision = createResult.Rev.Value,
-                PodioAppId = appId
+                PodioAppId = app.Id
             };
 
-            var commentOperations = await UpdateAzureComments(item, witClient, link);
-            if (commentOperations.Any())
-            {
-                var updatedItem = await witClient.UpdateWorkItemAsync(commentOperations, link.AzureId);
-                link.AzureRevision = updatedItem.Rev.Value;
-            }
+            var newRevision = await UpdateAzureComments(item, witClient, link);
+            link.AzureRevision = newRevision;
 
             createLinkCommand.InputModel = link;
             createLinkCommand.Run();
-            return link;
+            return createResult.Url;
         }
 
-        private async Task<JsonPatchDocument> UpdateAzureComments(Item item, WorkItemTrackingHttpClient witClient, PodioAzureItemLink link)
+        private async Task<int> UpdateAzureComments(Item item, WorkItemTrackingHttpClient witClient, PodioAzureItemLink link)
         {
-            var result = new JsonPatchDocument();
+            var newRevision = link.AzureRevision;
             var azureComments = await witClient.GetCommentsAsync(link.AzureId);
             foreach (var comment in item.Comments)
             {
@@ -134,15 +161,19 @@ namespace PodioSyncer.Services
                 {
                     continue;
                 }
-                header += comment.Value; // TODO might be RichValue ? 
+                var result = new JsonPatchDocument();
+                header += comment.Value;
                 result.Add(new JsonPatchOperation()
                 {
                     Operation = Operation.Add,
                     Path = $"/fields/System.History",
                     Value = header
                 });
+                // Can only update one comment at the time
+                var updateResult = await witClient.UpdateWorkItemAsync(result, link.AzureId, suppressNotifications: true);
+                newRevision = updateResult.Rev.Value;
             }
-            return result;
+            return newRevision;
         }
     }
 }

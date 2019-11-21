@@ -15,7 +15,7 @@ namespace PodioSyncer.Data.Commands
 
         protected override void RunCommand()
         {
-            var podioApp = dbContext.PodioApps.SingleOrDefault(x => x.PodioAppId == PodioAppId.ToString());
+            var podioApp = dbContext.PodioApps.SingleOrDefault(x => x.PodioAppId == PodioAppId);
             if (podioApp == null)
                 throw new ArgumentException(nameof(PodioAppId));
 

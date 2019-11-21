@@ -38,8 +38,7 @@ namespace PodioSyncer.Controllers
         [HttpPost]
         [Route("webhook")]
         public async Task<IActionResult> Webhook(AzureItem item)
-        {
-
+        {            
             var link = _queryDb.Links.SingleOrDefault(x => x.AzureId == item.Resource.WorkItemId);
             if (link == null)
             {

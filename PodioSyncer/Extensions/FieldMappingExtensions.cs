@@ -10,7 +10,7 @@ namespace PodioSyncer.Extensions
     {
         public static bool IsComplexType(this FieldMapping mapping)
         {
-            return mapping.FieldType == FieldType.Category || mapping.FieldType == FieldType.File || mapping.FieldType == FieldType.Image || mapping.FieldType == FieldType.User;
+            return mapping.FieldType == FieldType.Category || mapping.FieldType == FieldType.Image || mapping.FieldType == FieldType.User;
         }
     }
 }

@@ -27,17 +27,15 @@ namespace PodioSyncer.Data.Commands
             if (string.IsNullOrWhiteSpace(InputModel.AppToken))
                 throw new ArgumentNullException(nameof(InputModel.AppToken));
 
-            if (string.IsNullOrWhiteSpace(InputModel.PodioAppId))
+            if (InputModel.PodioAppId == 0)
                 throw new ArgumentNullException(nameof(InputModel.PodioAppId));
-
-            if (!int.TryParse(InputModel.PodioAppId, out var appId))
-                throw new ArgumentException($"{nameof(InputModel.PodioAppId)} MUST be a number");
 
             podioApp = new PodioApp
             {
                 AppToken = InputModel.AppToken,
                 Name = InputModel.Name,
-                PodioAppId = InputModel.PodioAppId                
+                PodioAppId = InputModel.PodioAppId,
+                PodioTypeExternalId = InputModel.PodioTypeExternalId
             };
             dbContext.PodioApps.Add(podioApp);
             dbContext.SaveChanges();

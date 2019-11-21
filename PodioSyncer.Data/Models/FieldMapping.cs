@@ -17,13 +17,12 @@ namespace PodioSyncer.Data.Models
 
     public enum FieldType
     {
-        Boolean,
-        Int,
-        String,
-        Image,
-        File,
-        User,
-        Category,
-        Date
+        Boolean = 0,
+        Int = 1,
+        String = 2,
+        Image = 3,
+        User = 5,
+        Category = 6,
+        Date = 7
     }
 }

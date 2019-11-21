@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,11 +42,13 @@ namespace PodioSyncer
             services.AddTransient<ConfigurationOptions>();
             services.AddTransient<QueryDb>();
             services.AddTransient<SyncService>();
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
             // Commands
             services.AddTransient<VerifyWebhookCommand>();
             services.AddTransient<CreatePodioApp>();
             services.AddTransient<UpdatePodioApp>();
+            services.AddTransient<DeletePodioApp>();
             services.AddTransient<CreateLink>();
             services.AddTransient<UpdateLink>();            
         }

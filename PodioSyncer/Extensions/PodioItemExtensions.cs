@@ -46,9 +46,9 @@ namespace PodioSyncer.Extensions
             return field.Values.ToObject<PodioValue[]>().First().Value.Text;
         }
 
-        public static string GetAzureType(this Item item)
+        public static string GetAzureType(this Item item, PodioApp app)
         {
-            switch (item.GetPodioType("type-of-issue").ToLower())
+            switch (item.GetPodioType(app.PodioTypeExternalId).ToLower())
             {
                 case "bug":
                     return AzureType.Bug.ToAzureTypeString();
@@ -60,10 +60,10 @@ namespace PodioSyncer.Extensions
             return null;
         }
 
-        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio)
+        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app)
         {
             var patchDocument = new JsonPatchDocument();
-            var podioType = item.GetPodioType("type-of-issue");
+            var podioType = item.GetPodioType(app.PodioTypeExternalId);
             var appId = item.App.AppId;
 
             var mappings = queryDb.TypeMappings
@@ -106,15 +106,13 @@ namespace PodioSyncer.Extensions
                             }
                         }
                         break;
-                    case FieldType.File: // TODO move out of foreach and handle seperately
-                        break;
                     case FieldType.User:
                         var userField = item.Field<ContactItemField>(field.ExternalId);
                         var contact = userField.Contacts.FirstOrDefault();
                         string commentText = "";
                         if(!queryDb.Links.Any(x => x.PodioId == item.ItemId))
                         {
-                            commentText = $"Created by {contact.Name}";
+                            commentText = $"Created by {contact.Name}</br>Podio url: {item.Link}";
                             patchDocument.Add(
                                 new JsonPatchOperation()
                                 {
@@ -127,7 +125,7 @@ namespace PodioSyncer.Extensions
                         break;
                     case FieldType.Category:                        
                         var categoryValue = field.Values.ToObject<PodioValue[]>();
-                        var mappedValue = mapping.CategoryMappings.SingleOrDefault(x => x.PodioValue == categoryValue[0].Value.Text)?.AzureValue;
+                        var mappedValue = mapping.CategoryMappings.FirstOrDefault(x => x.PodioValue == categoryValue[0].Value.Text)?.AzureValue;
                         patchDocument.Add(
                             new JsonPatchOperation()
                             {
@@ -175,6 +173,31 @@ namespace PodioSyncer.Extensions
                         break;
                 }
             }
+
+            // Handle files
+            foreach (var file in item.Files)
+            {
+                var podioFile = await podio.FileService.DownloadFile(file);
+                using (var stream = new MemoryStream(podioFile.FileContents))
+                {
+                    var fileReference = await itemClient.CreateAttachmentAsync(stream);
+
+                    patchDocument.Add(
+                        new JsonPatchOperation()
+                        {
+                            Operation = Operation.Add,
+                            Path = "/relations/-",
+                            Value = new
+                            {
+                                rel = "AttachedFile",
+                                url = fileReference.Url,
+                                attributes = new { name = file.Name }
+                            }
+                        }
+                    );
+                }
+            }
+
             return patchDocument;
         }
     }

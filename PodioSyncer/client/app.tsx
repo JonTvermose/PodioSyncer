@@ -8,16 +8,12 @@ import { CreatePodioApp } from "./pages/createpodioapp";
 
 const App: React.FC = () => {
 
-    const createPodioApp = () => {
-        return (<CreatePodioApp onCreated={() => alert("Created")} onCancel={() =>alert("Cancelled")} />);
-    }
-
     return (
         <Router>
             <div className="App">
                 <Switch>
                     <Route exact path="/" component={PodioApps} />
-                    <Route exact path="/create" component={createPodioApp} />
+                    <Route exact path="/create" component={CreatePodioApp} />
                 </Switch>
 
             </div>

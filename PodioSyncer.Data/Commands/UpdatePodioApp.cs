@@ -22,7 +22,6 @@ namespace PodioSyncer.Data.Commands
                 throw new ArgumentException(nameof(InputModel.PodioAppId));
 
             podioApp.AppToken = InputModel.AppToken;
-            podioApp.Active = InputModel.Active;
             podioApp.Name = InputModel.Name;
             podioApp.Verified = false;           
             dbContext.SaveChanges();
