@@ -17,3 +17,37 @@
 .App-link {
   color: #09d3ac;
 }
+
+
+/* BOOTSTRAP OVERRIDES */
+.btn-primary {
+    background-color: #2e86de !important;
+    border-color: #2e86de !important;
+}
+
+    .btn-primary:hover {
+        background-color: #1d6bb9 !important;
+        border-color: #1d6bb9 !important;
+    }
+
+
+.btn-secondary {
+    background-color: #8395a7 !important;
+    border-color: #8395a7 !important;
+}
+
+    .btn-secondary:hover {
+        background-color: #63778b !important;
+        border-color: #63778b !important;
+    }
+
+
+.btn-danger {
+    background-color: #ee5253 !important;
+    border-color: #ee5253 !important;
+}
+
+    .btn-danger:hover {
+        background-color: #e81819 !important;
+        border-color: #e81819 !important;
+    }

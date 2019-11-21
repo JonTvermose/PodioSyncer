@@ -7,6 +7,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using PodioAPI;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
@@ -59,16 +60,21 @@ namespace PodioSyncer.Controllers
         [HttpPost]
         [IgnoreAntiforgeryToken(Order = 1001)]
         [Route("syncpodioitem")]
-        public async Task<IActionResult> SyncPodioItem([FromBody] PodioSyncItemViewModel inputModel, [FromServices] CreateLink createLinkCommand)
+        public async Task<IActionResult> SyncPodioItem([FromBody] PodioSyncItemViewModel model, [FromServices] CreateLink createLinkCommand)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            // TODO check that item has not been synced
-            if(_queryDb.Links.Any(x => x.PodioId == inputModel.AppItemId))
+
+            var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
+            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == model.PodioAppId);
+            await podio.AuthenticateWithApp(model.PodioAppId, app.AppToken);
+            var item = await podio.ItemService.GetItemByAppItemId(model.PodioAppId, model.AppItemId);
+
+            if (_queryDb.Links.Any(x => x.PodioId == item.ItemId))
             {
                 return Ok(new { ok = false });
             }
-            var azureLink = await _syncService.SyncPodioItemToAzure(inputModel, createLinkCommand);
+            var azureLink = await _syncService.SyncPodioItemToAzure(createLinkCommand, podio, app, item);
 
             return Ok(new { url = azureLink, ok = true });
         }

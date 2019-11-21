@@ -36,13 +36,8 @@ namespace PodioSyncer.Services
             _mapper = mapper;
         }
 
-        public async Task<string> SyncPodioItemToAzure(PodioSyncItemViewModel model, CreateLink createLinkCommand)
-        {
-            var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
-            var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == model.PodioAppId);
-            await podio.AuthenticateWithApp(model.PodioAppId, app.AppToken);
-            
-            var item = await podio.ItemService.GetItemByAppItemId(model.PodioAppId, model.AppItemId);
+        public async Task<string> SyncPodioItemToAzure(CreateLink createLinkCommand, Podio podio, PodioApp app, Item item)
+        {            
             var link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
 
             VssConnection connection = null;

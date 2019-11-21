@@ -1,6 +1,7 @@
 ﻿using PodioSyncer.Data.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PodioSyncer.Data.Commands
@@ -17,6 +18,9 @@ namespace PodioSyncer.Data.Commands
         {
             if (InputModel == null)
                 throw new ArgumentException(nameof(InputModel));
+
+            if (dbContext.PodioAzureItemLinks.Any(x => x.PodioId == InputModel.PodioId))
+                throw new ArgumentException(nameof(InputModel.PodioId));
 
             dbContext.PodioAzureItemLinks.Add(InputModel);
             dbContext.SaveChanges();

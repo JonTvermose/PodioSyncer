@@ -23,7 +23,12 @@ const PosedDiv = posed.div({
 const SyncDiv = styled.div`
 margin: 200px;
 background-color: white;
-padding: 20px;
+padding: 40px;
+border-radius: 5px;
+text-align: left;
+max-width: 900px;
+min-width: 900px;
+display: inline-block;
 `;
 
 export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
@@ -32,7 +37,7 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
     const [showSync, setShowSync] = useState(false);
     const [syncAppId, setSyncAppId] = useState(0);
     const [syncItemUrl, setSyncItemUrl] = useState("");
-    const [syncedItems, setSyncedItems] = useState();
+    const [syncedItems, setSyncedItems] = useState<string[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -96,11 +101,13 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
             }
         }).then(data => {
             if (data.ok === true) {
-                toast.success("Sync completed");
-                console.log("Sync completed. Url: " + data.url);
-                let items = syncedItems;
+                toast.success("Sync complete");
+                let items = JSON.parse(JSON.stringify(syncedItems));
                 items.push(data.url);
                 setSyncedItems(items);
+                if (inputRef.current) {
+                    inputRef.current.focus();
+                }
             } else {
                 toast.error("Item is allready synced");
             }
@@ -117,30 +124,32 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                 onDelete={handleOnDelete}
                 onSync={handleOnSync} />
 
-            <PosedDiv style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9, backgroundColor: "rgba(0,0,0,0.25)" }} pose={showSync ? "visible" : "hidden"}>
+            <PosedDiv style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9, backgroundColor: "rgba(0,0,0,0.5)", textAlign: "center" }} pose={showSync ? "visible" : "hidden"}>
                 
                 <SyncDiv>
-                    <form>
-                        <div className="form-group">
-                            <label>Podio item url</label>
-                            <input ref={inputRef} type="text" className="form-control" value={syncItemUrl} onChange={e => setSyncItemUrl(e.target.value)} />
-                            <small className="form-text text-muted">The full url of the Podio Item.</small>
+                    <div>
+                        <form>
+                            <div className="form-group">
+                                <label>Podio item url</label>
+                                <input ref={inputRef} type="text" className="form-control" value={syncItemUrl} onChange={e => setSyncItemUrl(e.target.value)} />
+                                <small className="form-text text-muted">The full url of the Podio Item.</small>
+                            </div>
+                        </form>
+                        <div className="row">
+                            <div className="col-12">
+                                <button className="btn btn-sm ml-2 float-right btn-secondary" onClick={() => setShowSync(false)}>Cancel</button>
+                                <button className="btn btn-sm float-right btn-primary" onClick={() => handleSyncItemToAzure()}>Sync to Azure</button>
+                            </div>
                         </div>
-                    </form>
-                    <div className="row">
-                        <div className="col-12">
-                            <button className="btn btn-sm ml-2 float-right btn-secondary" onClick={() => setShowSync(false)}>Cancel</button>
-                            <button className="btn btn-sm float-right btn-primary" onClick={() => handleSyncItemToAzure()}>Sync to Azure</button>
-                        </div>
+                        <form>
+                            <div className="form-group mt-3">
+                                {syncedItems.length !== 0 && <label className="mb-0">Synced in this session:</label>}
+                                {syncedItems.map((value: string, index: number) => {
+                                    return (<small key={index +1} className="form-text text-muted ml-2">{value}</small>)
+                                })}
+                            </div>                    
+                        </form>
                     </div>
-                    {syncedItems.length > 0 &&
-                        <div className="form-group">
-                            <label>Synced items in this session</label>
-                            {syncedItems.map((index: any, url: string) => {
-                                return (<small key={index} className="form-text text-muted">{url}</small>)
-                            })}
-                        </div>
-                    }
                 </SyncDiv>
                 </PosedDiv>
             <LoadingSpinner isLoading={isLoading} />

@@ -12,15 +12,15 @@ type PodioRowProps = {
 export const PodioRow: FunctionComponent<PodioRowProps> = (podioProps) => {     
 
     return (
-        <div>
-            <div className="row" style={{ borderBottom: "1px solid #afafaf", paddingBottom: "5px", paddingTop: "5px", fontWeight: "bold" }}>
+        <div className="mt-3">
+            <div className="row" style={{paddingBottom: "10px", paddingTop: "10px", fontWeight: "bold" }}>
                 <div className="col-3">Name</div>
                 <div className="col-2">Podio App Id</div>
                 <div className="col-3">Webhook Url</div>
                 <div className="col-2"></div>
             </div>
             {podioProps.rows.map((app, index) =>
-                <div key={index} className="row" style={{ borderBottom: "1px solid #afafaf", paddingBottom: "5px", paddingTop: "5px" }}>
+                <div key={index} className="row" style={{ paddingBottom: "10px", paddingTop: "10px", backgroundColor: index % 2 == 0 ? "white" : "" }}>
                     <div className="col-3">{app.name}</div>
                     <div className="col-2">{app.podioAppId}</div>
                     <div className="col-3"><span style={{fontSize: "12px"}}>{app.webhookUrl}</span></div>
