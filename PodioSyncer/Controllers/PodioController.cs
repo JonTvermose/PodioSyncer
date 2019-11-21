@@ -64,9 +64,13 @@ namespace PodioSyncer.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             // TODO check that item has not been synced
+            if(_queryDb.Links.Any(x => x.PodioId == inputModel.AppItemId))
+            {
+                return Ok(new { ok = false });
+            }
             var azureLink = await _syncService.SyncPodioItemToAzure(inputModel, createLinkCommand);
 
-            return Ok(azureLink);
+            return Ok(new { url = azureLink, ok = true });
         }
 
         [HttpPost]

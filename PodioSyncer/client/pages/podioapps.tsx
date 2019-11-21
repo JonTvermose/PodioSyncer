@@ -32,7 +32,7 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
     const [showSync, setShowSync] = useState(false);
     const [syncAppId, setSyncAppId] = useState(0);
     const [syncItemUrl, setSyncItemUrl] = useState("");
-    const [syncedItems, setSyncedItems] = useState([]);
+    const [syncedItems, setSyncedItems] = useState();
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -95,8 +95,15 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                 setIsLoading(false);
             }
         }).then(data => {
-            toast.success("Sync completed");
-            console.log("Sync completed. Url: " + data);
+            if (data.ok === true) {
+                toast.success("Sync completed");
+                console.log("Sync completed. Url: " + data.url);
+                let items = syncedItems;
+                items.push(data.url);
+                setSyncedItems(items);
+            } else {
+                toast.error("Item is allready synced");
+            }
             setIsLoading(false);
         });        
     }
@@ -119,12 +126,6 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                             <input ref={inputRef} type="text" className="form-control" value={syncItemUrl} onChange={e => setSyncItemUrl(e.target.value)} />
                             <small className="form-text text-muted">The full url of the Podio Item.</small>
                         </div>
-                        <div className="form-group">
-                            <label>Synced items in this session</label>
-                            {syncedItems.map((index, url) => {
-                                return (<small key={index} className="form-text text-muted">{url}</small>)
-                            })}                            
-                        </div>
                     </form>
                     <div className="row">
                         <div className="col-12">
@@ -132,6 +133,14 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                             <button className="btn btn-sm float-right btn-primary" onClick={() => handleSyncItemToAzure()}>Sync to Azure</button>
                         </div>
                     </div>
+                    {syncedItems.length > 0 &&
+                        <div className="form-group">
+                            <label>Synced items in this session</label>
+                            {syncedItems.map((index: any, url: string) => {
+                                return (<small key={index} className="form-text text-muted">{url}</small>)
+                            })}
+                        </div>
+                    }
                 </SyncDiv>
                 </PosedDiv>
             <LoadingSpinner isLoading={isLoading} />

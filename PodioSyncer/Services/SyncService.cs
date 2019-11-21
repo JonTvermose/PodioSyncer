@@ -41,10 +41,8 @@ namespace PodioSyncer.Services
             var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
             var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == model.PodioAppId);
             await podio.AuthenticateWithApp(model.PodioAppId, app.AppToken);
-
-            var url = new Uri(model.PodioItemUrl);
-            var appItemId = int.Parse(url.AbsolutePath.Split('/').Last());
-            var item = await podio.ItemService.GetItemByAppItemId(model.PodioAppId, appItemId);
+            
+            var item = await podio.ItemService.GetItemByAppItemId(model.PodioAppId, model.AppItemId);
             var link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
 
             VssConnection connection = null;

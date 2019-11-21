@@ -21,7 +21,7 @@ export var PodioApps = function (podioProps) {
     var _c = useState(false), showSync = _c[0], setShowSync = _c[1];
     var _d = useState(0), syncAppId = _d[0], setSyncAppId = _d[1];
     var _e = useState(""), syncItemUrl = _e[0], setSyncItemUrl = _e[1];
-    var _f = useState([]), syncedItems = _f[0], setSyncedItems = _f[1];
+    var _f = useState(), syncedItems = _f[0], setSyncedItems = _f[1];
     var inputRef = useRef(null);
     useEffect(function () {
         fetch(jsonRoutes["getpodioapps"])
@@ -79,8 +79,16 @@ export var PodioApps = function (podioProps) {
                 setIsLoading(false);
             }
         }).then(function (data) {
-            toast.success("Sync completed");
-            console.log("Sync completed. Url: " + data);
+            if (data.ok === true) {
+                toast.success("Sync completed");
+                console.log("Sync completed. Url: " + data.url);
+                var items = syncedItems;
+                items.push(data.url);
+                setSyncedItems(items);
+            }
+            else {
+                toast.error("Item is allready synced");
+            }
             setIsLoading(false);
         });
     };
