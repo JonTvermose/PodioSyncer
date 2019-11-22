@@ -115,6 +115,11 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
         });        
     }
 
+    const handleSyncExitClick = (e: any) => {
+        if (e.target.id === "overlay") {
+            setShowSync(false);
+        }
+    }
     return (
         <div className="container">
             <h3>List of podio apps <Link to="/create"><button className="btn btn-primary float-right">Create new</button></Link></h3>
@@ -124,7 +129,7 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                 onDelete={handleOnDelete}
                 onSync={handleOnSync} />
 
-            <PosedDiv style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9, backgroundColor: "rgba(0,0,0,0.5)", textAlign: "center" }} pose={showSync ? "visible" : "hidden"}>
+            <PosedDiv id="overlay" onClick={handleSyncExitClick} style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9, backgroundColor: "rgba(0,0,0,0.5)", textAlign: "center" }} pose={showSync ? "visible" : "hidden"}>
                 
                 <SyncDiv>
                     <div>
@@ -137,7 +142,7 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                         </form>
                         <div className="row">
                             <div className="col-12">
-                                <button className="btn btn-sm ml-2 float-right btn-secondary" onClick={() => setShowSync(false)}>Cancel</button>
+                                <button className="btn btn-sm ml-2 float-right btn-secondary" onClick={() => setShowSync(false)}>Close</button>
                                 <button className="btn btn-sm float-right btn-primary" onClick={() => handleSyncItemToAzure()}>Sync to Azure</button>
                             </div>
                         </div>
