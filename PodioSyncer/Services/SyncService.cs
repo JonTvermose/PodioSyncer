@@ -49,7 +49,7 @@ namespace PodioSyncer.Services
             }
             connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
             witClient = connection.GetClient<WorkItemTrackingHttpClient>();
-            var azureUrl = await CreateAzureItem(podio, item, witClient, createLinkCommand, app);
+            var azureUrl = await CreateAzureItem(podio, item, witClient, createLinkCommand, app);            
             return azureUrl;
         }
 
@@ -135,12 +135,15 @@ namespace PodioSyncer.Services
                 PodioAppId = app.Id
             };
 
-            var newRevision = await UpdateAzureComments(item, witClient, link);
-            link.AzureRevision = newRevision;
+            link.AzureRevision = await UpdateAzureComments(item, witClient, link); ;
 
             createLinkCommand.InputModel = link;
             createLinkCommand.Run();
-            return createResult.Url;
+
+            // TODO Sync to Podio
+            // Create Comment with link to azure item
+            var url = $"{_options.AzureOptions.ProjectUrl}/{_options.AzureOptions.ProjectGuid}/_workitems/edit/{createResult.Url.Split('/').Last()}";
+            return url;
         }
 
         private async Task<int> UpdateAzureComments(Item item, WorkItemTrackingHttpClient witClient, PodioAzureItemLink link)

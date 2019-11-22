@@ -112,7 +112,7 @@ namespace PodioSyncer.Extensions
                         string commentText = "";
                         if(!queryDb.Links.Any(x => x.PodioId == item.ItemId))
                         {
-                            commentText = $"Created by {contact.Name}</br>Podio url: {item.Link}";
+                            commentText = $"Created by {contact.Name}</br>Podio url: <a href=\"{item.Link}\" target=\"_blank\">{item.Link}</a>";
                             patchDocument.Add(
                                 new JsonPatchOperation()
                                 {
@@ -120,7 +120,7 @@ namespace PodioSyncer.Extensions
                                     Path = $"/fields/System.History",
                                     Value = commentText
                                 }
-                            );
+                            );              
                         }
                         break;
                     case FieldType.Category:                        
@@ -196,6 +196,19 @@ namespace PodioSyncer.Extensions
                         }
                     );
                 }
+            }
+
+            // Set to current iteration if it's a bug and it has priority 1
+            if(patchDocument.Any(x => x.Path == "/fields/Microsoft.VSTS.Common.Priority" && x.Value.ToString() == "1") 
+                && string.Equals(item.GetAzureType(app), "bug", StringComparison.CurrentCultureIgnoreCase))
+            {
+                patchDocument.Add(
+                    new JsonPatchOperation()
+                    {
+                      Operation = Operation.Add,
+                      Path = $"/fields/System.IterationPath",
+                      Value = "Current"
+                    });
             }
 
             return patchDocument;
