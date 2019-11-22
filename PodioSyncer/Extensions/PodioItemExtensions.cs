@@ -60,7 +60,7 @@ namespace PodioSyncer.Extensions
             return null;
         }
 
-        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app)
+        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app, bool ignoreRequirements)
         {
             var patchDocument = new JsonPatchDocument();
             var podioType = item.GetPodioType(app.PodioTypeExternalId);
@@ -73,12 +73,35 @@ namespace PodioSyncer.Extensions
                 .SelectMany(x => x.FieldMappings)
                 .ToList();
 
+            if (ignoreRequirements)
+            {
+                foreach (var categoryField in mappings.Where(x => x.FieldType == FieldType.Category))
+                {
+                    var requiredValue = categoryField.CategoryMappings.SingleOrDefault(x => x.Required);
+                    if (requiredValue != null)
+                    {
+                        var field = item.Fields
+                            .SingleOrDefault(x => x.ExternalId == categoryField.PodioFieldName);
+                        if(field == null)
+                        {
+                            throw new ArgumentException("Rules dictate this item should not be synced");
+                        }
+                        var podioValueField = field.Values.ToObject<PodioValue[]>();
+                        var fieldValue = podioValueField.FirstOrDefault()?.Value?.Text;
+                        if (!requiredValue.PodioValue.Equals(fieldValue, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            throw new ArgumentException("Rules dictate this item should not be synced");
+                        }
+                    }
+                }
+            }
+
             foreach (var field in item.Fields)
             {
                 var mapping = mappings.SingleOrDefault(x => x.PodioFieldName == field.ExternalId);
-                if (mapping == null)
+                if (mapping == null || (string.IsNullOrWhiteSpace(mapping.AzureFieldName) && !(mapping.FieldType == FieldType.Image || mapping.FieldType == FieldType.User)))
                     continue;
-
+                
                 switch (mapping.FieldType)
                 {
                     case FieldType.Image:

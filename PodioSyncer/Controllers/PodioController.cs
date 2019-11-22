@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,7 @@ namespace PodioSyncer.Controllers
 {
     [Route("podio")]
     [ApiController]
+    [Authorize]
     public class PodioController : ControllerBase
     {
         private readonly ConfigurationOptions _options;

@@ -12,6 +12,9 @@ namespace PodioSyncer.Data.Models
         public int AzureId { get; set; }
         public int AzureRevision { get; set; }
         public int PodioAppId { get; set; }
+        public string PodioUrl { get; set; }
+        public string AzureUrl { get; set; }
         public PodioApp PodioApp { get; set; }
+        public ICollection<SyncEvent> SyncEvents { get; set; }
     }
 }

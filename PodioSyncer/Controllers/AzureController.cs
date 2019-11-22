@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
@@ -21,8 +22,9 @@ using PodioSyncer.Options;
 
 namespace PodioSyncer.Controllers
 {
-    [Route("api/azure")]
+    [Route("azure")]
     [ApiController]
+    [Authorize]
     public class AzureController : ControllerBase
     {
         private readonly QueryDb _queryDb;

@@ -36,6 +36,10 @@ namespace PodioSyncer.Data
             builder.Entity<TypeMapping>()
                 .HasOne(x => x.PodioApp)
                 .WithMany(x => x.TypeMappings);
+
+            builder.Entity<SyncEvent>()
+                .HasOne(x => x.PodioAzureItemLink)
+                .WithMany(x => x.SyncEvents);
         }
 
         public DbSet<PodioApp> PodioApps { get; set; }
@@ -43,6 +47,7 @@ namespace PodioSyncer.Data
         public DbSet<FieldMapping> FieldMappings { get; set; }
         public DbSet<CategoryMapping> CategoryMappings { get; set; }
         public DbSet<TypeMapping> TypeMappings { get; set; }
+        public DbSet<SyncEvent> SyncEvents { get; set; }
 
     }
 }

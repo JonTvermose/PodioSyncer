@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +37,11 @@ namespace PodioSyncer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetSection("ConnectionStrings")["DefaultConnection"]));
+
+            // Authentication
+            services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
+                    .AddAzureAD(options => Configuration.Bind("AzureAd", options));
+
             services.AddControllersWithViews();
 
             // Automapper
@@ -50,7 +60,8 @@ namespace PodioSyncer
             services.AddTransient<UpdatePodioApp>();
             services.AddTransient<DeletePodioApp>();
             services.AddTransient<CreateLink>();
-            services.AddTransient<UpdateLink>();            
+            services.AddTransient<UpdateLink>();
+            services.AddTransient<CreateSyncEvent>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,6 +83,7 @@ namespace PodioSyncer
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

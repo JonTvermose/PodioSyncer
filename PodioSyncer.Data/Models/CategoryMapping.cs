@@ -11,6 +11,8 @@ namespace PodioSyncer.Data.Models
         public string AzureValue { get; set; }
         public FieldType FieldType { get; set; }
         public int FieldMappingId { get; set; }
+        public bool Required { get; set; }
+
         public FieldMapping FieldMapping { get; set; }
     }
 }
