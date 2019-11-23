@@ -173,14 +173,22 @@ namespace PodioSyncer.Extensions
                         break;
                     case FieldType.String:
                         var stringValue = field.Values.First().Value<string>("value");
-                        patchDocument.Add(
-                            new JsonPatchOperation()
-                            {
-                                Operation = Operation.Add,
-                                Path = $"/fields/{mapping.AzureFieldName}",
-                                Value = stringValue
-                            }
-                        );
+                        var existing = patchDocument.SingleOrDefault(x => x.Path == $"/fields/{mapping.AzureFieldName}");
+                        if (existing != null)
+                        {
+                            existing.Value += mapping.PrefixValue + stringValue;
+                        }
+                        else
+                        {
+                            patchDocument.Add(
+                                new JsonPatchOperation()
+                                {
+                                    Operation = Operation.Add,
+                                    Path = $"/fields/{mapping.AzureFieldName}",
+                                    Value = mapping.PrefixValue + stringValue
+                                }
+                            );
+                        }
                         break;
                     case FieldType.Date:
                         var dateField = item.Field<DateItemField>(field.ExternalId);

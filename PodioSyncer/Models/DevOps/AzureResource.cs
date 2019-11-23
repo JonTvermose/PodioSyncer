@@ -14,7 +14,7 @@ namespace PodioSyncer.Models.DevOps
         public int Rev { get; set; }
         public AzureUser RevisedBy { get; set; }
         public DateTime RevisedDate { get; set; }
-        public dynamic Fields { get; set; }
+        public IDictionary<string, object> Fields { get; set; }
         public string Url { get; set; }
         public AzureRevision Revision { get; set; }
 

@@ -14,5 +14,6 @@ namespace PodioSyncer.Data.Models
         public bool Required { get; set; }
 
         public FieldMapping FieldMapping { get; set; }
+        public int PodioValueId { get; set; }
     }
 }

@@ -13,6 +13,7 @@ namespace PodioSyncer.Data.Models
         public ICollection<CategoryMapping> CategoryMappings { get; set; }
         public int TypeMappingId { get; set; }
         public TypeMapping TypeMapping { get; set; }
+        public string PrefixValue { get; set; }
     }
 
     public enum FieldType
