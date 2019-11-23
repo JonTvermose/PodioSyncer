@@ -49,7 +49,7 @@ namespace PodioSyncer.Controllers
         public async Task<IActionResult> Webhook(AzureItem item)
         {            
             var link = _queryDb.Links.SingleOrDefault(x => x.AzureId == item.Resource.WorkItemId);
-            if (link == null)
+            if (link == null || link.AzureRevision >= item.Resource.Rev)
             {
                 return Ok();
             }
