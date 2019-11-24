@@ -76,41 +76,5 @@ namespace PodioSyncer.Controllers
             }
             return Ok();
         }
-
-        [HttpGet]
-        [Route("getpodioapps")]
-        public IActionResult GetPodioApps()
-        {
-            var podioApps = _queryDb.PodioApps.ProjectTo<PodioAppViewModel>(_mapper.ConfigurationProvider).ToList(); 
-            return Ok(podioApps);
-        }
-
-        [HttpPost]
-        [IgnoreAntiforgeryToken(Order = 1001)]
-        [Route("createpodioapp")]
-        public IActionResult CreatePodioApp([FromBody] PodioAppInputModel inputModel, [FromServices] CreatePodioApp command)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            command.InputModel = inputModel;
-            command.Run();
-
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("editpodioapp")]
-        public IActionResult EditPodioApp(PodioAppInputModel inputModel, [FromServices] UpdatePodioApp command)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            command.InputModel = inputModel;
-            command.Run();
-
-            return Ok();
-        }
-
     }
 }
