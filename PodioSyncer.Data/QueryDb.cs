@@ -22,6 +22,8 @@ namespace PodioSyncer.Data
         public IQueryable<FieldMapping> FieldMappings => _dbContext.FieldMappings.AsQueryable();
         public IQueryable<CategoryMapping> CategoryMappings => _dbContext.CategoryMappings.AsQueryable();
         public IQueryable<TypeMapping> TypeMappings => _dbContext.TypeMappings.AsQueryable();
-        
+        public IQueryable<SyncEvent> SyncEvents => _dbContext.SyncEvents.AsQueryable();
+
+
     }
 }

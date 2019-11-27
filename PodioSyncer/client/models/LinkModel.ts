@@ -2,4 +2,5 @@
      podioUrl: string;
      azureUrl: string;
      syncedDate: string;
+     initiator: string;
 }

@@ -11,6 +11,7 @@
     <None Remove="client\models\PodioAppModel.ts" />
     <None Remove="client\pages\createpodioapp.tsx" />
     <None Remove="client\pages\podioapps.tsx" />
+    <None Remove="client\pages\syncevents.tsx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,6 +56,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Update="client\pages\createpodioapp.tsx">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Update="client\pages\syncevents.tsx">
       <SubType>Code</SubType>
     </TypeScriptCompile>
   </ItemGroup>

@@ -58,7 +58,23 @@ namespace PodioSyncer.Controllers
             return Ok(result);
         }
 
-
+        [HttpGet]
+        [Route("getsyncevents")]
+        public async Task<IActionResult> GetSyncEvents()
+        {
+            var result = await _queryDb.SyncEvents                
+                .Include(x => x.PodioAzureItemLink)
+                .OrderByDescending(x => x.SyncDate)
+                .Select(x => new
+                {
+                    x.PodioAzureItemLink.AzureUrl,
+                    x.PodioAzureItemLink.PodioUrl,
+                    SyncedDate = x.SyncDate.ToString("HH:mm dd-MM-yyyy"),
+                    initiator = x.Initiator.ToString()
+                })
+                .ToListAsync();
+            return Ok(result);
+        }
 
         [HttpGet]
         [Route("getpodioapps")]
