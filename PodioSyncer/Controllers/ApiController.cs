@@ -5,10 +5,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 using PodioAPI;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
+using PodioSyncer.Data.Models;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
 using PodioSyncer.Services;
@@ -110,7 +114,55 @@ namespace PodioSyncer.Controllers
             return Ok(new { url = azureLink, ok = true });
         }
 
-        [HttpPost]
+    [HttpPost]
+    [IgnoreAntiforgeryToken(Order = 1001)]
+    [Route("createlink")]
+    public async Task<IActionResult> CreateLink([FromBody] PodioSyncItemViewModel model, 
+      [FromServices] CreateLink createLinkCommand, 
+      [FromServices] CreateSyncEvent createSyncEventCommand)
+    {
+      if (!ModelState.IsValid)
+        return BadRequest(ModelState);
+
+      var podio = new Podio(_options.PodioOptions.ClientId, _options.PodioOptions.ClientSecret);
+      var app = _queryDb.PodioApps.SingleOrDefault(x => x.PodioAppId == model.PodioAppId);
+      await podio.AuthenticateWithApp(model.PodioAppId, app.AppToken);
+      var podioItem = await podio.ItemService.GetItemByAppItemId(model.PodioAppId, model.AppItemId);
+
+      if (_queryDb.Links.Any(x => x.PodioId == podioItem.ItemId))
+      {
+        return Ok(new { ok = false });
+      }
+      VssConnection connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken)); ;
+      WorkItemTrackingHttpClient witClient = connection.GetClient<WorkItemTrackingHttpClient>();
+      var azureItem = await witClient.GetWorkItemAsync(model.AzureItemId);
+      
+      var link = new PodioAzureItemLink
+      {
+        AzureId = azureItem.Id.Value,
+        AzureUrl = azureItem.Url,
+        AzureRevision = azureItem.Rev.Value,
+        PodioAppId = app.Id,
+        PodioUrl = podioItem.Link,
+        PodioRevision = podioItem.CurrentRevision.Revision,
+        PodioId = podioItem.ItemId
+      };
+      createLinkCommand.InputModel = link;
+      createLinkCommand.Run();
+
+      createSyncEventCommand.InputModel = new SyncEvent
+      {
+        AzureRevision = link.AzureRevision,
+        Initiator = Initiator.Manuel,
+        PodioAzureItemLinkId = link.Id,
+        PodioRevision = link.PodioRevision,
+        SyncDate = DateTime.UtcNow
+      };
+      createSyncEventCommand.Run();
+      return Ok(new { ok = true });
+    }
+
+    [HttpPost]
         [IgnoreAntiforgeryToken(Order = 1001)]
         [Route("createpodioapp")]
         public IActionResult CreatePodioApp([FromBody] PodioAppInputModel inputModel, [FromServices] CreatePodioApp command)

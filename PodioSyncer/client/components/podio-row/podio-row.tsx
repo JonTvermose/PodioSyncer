@@ -14,6 +14,7 @@ type PodioRowProps = {
     onEdit(appId: string): void,
     onDelete(appId: string): void
     onSync(appId: string): void
+    onLink(appId: string): void
 }
 
 const PosedDiv = posed.div({
@@ -76,14 +77,15 @@ export const PodioRow: FunctionComponent<PodioRowProps> = (podioProps) => {
 
             {podioProps.rows.map((app, index) =>
                 <div key={index} className="row" style={{ paddingBottom: "10px", paddingTop: "10px", backgroundColor: index % 2 == 0 ? "white" : "" }}>
-                    <div className="col-3">{app.name}</div>
+                    <div className="col-2">{app.name}</div>
                     <div className="col-2">{app.podioAppId}</div>
                     <div className="col-3"><span style={{fontSize: "12px"}}>{app.webhookUrl}</span></div>
-                    <div className="col-4">
+                    <div className="col-5">
                         <button className="btn btn-sm btn-danger ml-2 float-right" onClick={() => podioProps.onDelete(app.podioAppId)}>Delete</button>
                         <button className="btn btn-sm btn-primary ml-2 float-right" onClick={() => podioProps.onEdit(app.podioAppId)}>Edit</button>
                         <button className="btn btn-sm btn-secondary ml-2 float-right" onClick={() => podioProps.onSync(app.podioAppId)}>Sync item</button>
-                        <button className="btn btn-sm btn-outline-secondary float-right" onClick={() => handleSyncedClick(app.podioAppId)}>Synced item</button>
+                        <button className="btn btn-sm btn-outline-secondary ml-2 float-right" onClick={() => handleSyncedClick(app.podioAppId)}>Synced item</button>
+                        <button className="btn btn-sm btn-outline-primary float-right" onClick={() => podioProps.onLink(app.podioAppId)}>Link item</button>
                     </div>
                 </div>
             )}

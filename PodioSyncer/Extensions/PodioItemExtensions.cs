@@ -60,7 +60,7 @@ namespace PodioSyncer.Extensions
             return null;
         }
 
-        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app, bool ignoreRequirements, int revision)
+        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app, bool ignoreRequirements)
         {
             var patchDocument = new JsonPatchDocument();
             var podioType = item.GetPodioType(app.PodioTypeExternalId);
@@ -95,8 +95,8 @@ namespace PodioSyncer.Extensions
                     }
                 }
             }
-
-            var fieldIds = (await podio.ItemService.GetItemRevisionDifference(item.ItemId, revision, item.CurrentRevision.Revision)).Select(x => x.ExternalId);
+            var revision = queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId)?.PodioRevision;      
+            var fieldIds = revision.HasValue ? (await podio.ItemService.GetItemRevisionDifference(item.ItemId, revision.Value, item.CurrentRevision.Revision)).Select(x => x.ExternalId) : item.Fields.Select(x => x.ExternalId);
             foreach (var field in item.Fields.Where(x => fieldIds.Contains(x.ExternalId)))
             {
                 var mapping = mappings.SingleOrDefault(x => x.PodioFieldName == field.ExternalId);

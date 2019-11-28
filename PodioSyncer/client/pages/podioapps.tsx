@@ -35,8 +35,12 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
     const [podioApps, setPodioApps] = useState<PodioAppModel[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showSync, setShowSync] = useState(false);
+    const [showLink, setShowLink] = useState(false);
     const [syncAppId, setSyncAppId] = useState(0);
+    const [linkAppId, setLinkAppId] = useState(0);
     const [syncItemUrl, setSyncItemUrl] = useState("");
+    const [linkAzureItemUrl, setLinkAzureItemUrl] = useState("");
+    const [linkPodioItemUrl, setLinkPodioItemUrl] = useState("");    
     const [syncedItems, setSyncedItems] = useState<string[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -82,6 +86,13 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
         setSyncItemUrl("");
     }
 
+    const handleOnLink = (appId: string): void => {
+        setShowLink(true);
+        setLinkAppId(+appId);
+        setLinkPodioItemUrl("");
+        setLinkAzureItemUrl("");
+    }
+
     const handleSyncItemToAzure = () => {
         setIsLoading(true);        
         fetch(jsonRoutes["syncpodioitem"], {
@@ -120,6 +131,42 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
             setShowSync(false);
         }
     }
+
+    const handleLinkExitClick = (e: any) => {
+        if (e.target.id === "overlay") {
+            setShowLink(false);
+        }
+    }
+
+    const handleLinkItems = () => {
+        setIsLoading(true);
+        fetch(jsonRoutes["createlink"], {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ PodioAppId: linkAppId, PodioItemUrl: linkPodioItemUrl, AzureItemUrl: linkAzureItemUrl })
+        }).then(res => {
+            if (res.ok === true) {
+                setIsLoading(false);
+                return res.json();
+            } else {
+                toast.error(res.statusText)
+                setIsLoading(false);
+            }
+        }).then(data => {
+            if (data.ok === true) {
+                toast.success("Link created");
+                setLinkPodioItemUrl("");
+                setLinkAzureItemUrl("");
+            } else {
+                toast.error("Item is allready linked");
+            }
+            setIsLoading(false);
+        });
+    }
+
     return (
         <div className="container">
             <h3>List of podio apps <Link to="/create"><button className="btn btn-primary float-right">Create new</button></Link></h3>
@@ -127,7 +174,8 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                 rows={podioApps}
                 onEdit={handleOnEdit}
                 onDelete={handleOnDelete}
-                onSync={handleOnSync} />
+                onSync={handleOnSync}
+                onLink={handleOnLink}/>
 
             <PosedDiv id="overlay" onClick={handleSyncExitClick} style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9, backgroundColor: "rgba(0,0,0,0.5)", textAlign: "center" }} pose={showSync ? "visible" : "hidden"}>                
                 <SyncDiv>
@@ -155,7 +203,31 @@ export const PodioApps: FunctionComponent<PodioAppProps> = (podioProps) => {
                         </form>
                     </div>
                 </SyncDiv>
-                </PosedDiv>
+            </PosedDiv>
+            <PosedDiv id="overlay" onClick={handleLinkExitClick} style={{ position: "absolute", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 9, backgroundColor: "rgba(0,0,0,0.5)", textAlign: "center" }} pose={showLink ? "visible" : "hidden"}>
+                <SyncDiv>
+                    <div>
+                        <form>
+                            <div className="form-group">
+                                <label>Podio item url</label>
+                                <input type="text" className="form-control" value={linkPodioItemUrl} onChange={e => setLinkPodioItemUrl(e.target.value)} />
+                                <small className="form-text text-muted">The full url of the Podio Item.</small>
+                            </div>
+                            <div className="form-group">
+                                <label>Azure item url</label>
+                                <input type="text" className="form-control" value={linkAzureItemUrl} onChange={e => setLinkAzureItemUrl(e.target.value)} />
+                                <small className="form-text text-muted">The full url of the corresponding Azure Item.</small>
+                            </div>
+                        </form>
+                        <div className="row">
+                            <div className="col-12">
+                                <button className="btn btn-sm ml-2 float-right btn-secondary" onClick={() => setShowLink(false)}>Close</button>
+                                <button className="btn btn-sm float-right btn-primary" onClick={() => handleLinkItems()}>Create link</button>
+                            </div>
+                        </div>
+                    </div>
+                </SyncDiv>
+            </PosedDiv>
             <LoadingSpinner isLoading={isLoading} />
             <ToastContainer />
         </div>)

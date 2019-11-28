@@ -9,7 +9,10 @@ namespace PodioSyncer.Models.ViewModels
     {
         public int PodioAppId { get; set; }
         public string PodioItemUrl { get; set; }
+        public string AzureItemUrl { get; set; }
 
         public int AppItemId => int.Parse(new Uri(PodioItemUrl).AbsolutePath.Split('/').Last());
-    }
+
+        public int AzureItemId => int.Parse(new Uri(AzureItemUrl).AbsolutePath.Split('/').Last());
+  }
 }

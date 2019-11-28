@@ -98,11 +98,6 @@ namespace PodioSyncer.Services
             item = await podio.ItemService.GetItem(int.Parse(hook.item_id));
             link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
             var revision = item.CurrentRevision.Revision;
-            if (link.PodioRevision >= revision)
-            {
-              // Allready processed this revision
-              return;
-            }
             type = item.GetAzureType(app);
             connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
             witClient = connection.GetClient<WorkItemTrackingHttpClient>();
@@ -112,7 +107,12 @@ namespace PodioSyncer.Services
               await CreateAzureItem(podio, item, witClient, createLinkCommand, app);
               return;
             }
-            var changes = await item.GetChangesAsync(_queryDb, witClient, podio, app, false, link.PodioRevision);
+            if (link.PodioRevision >= revision)
+            {
+              // Allready processed this revision
+              return;
+            }
+            var changes = await item.GetChangesAsync(_queryDb, witClient, podio, app, false);
             
             var wItem = await witClient.UpdateWorkItemAsync(changes, link.AzureId);
             link.AzureRevision = wItem.Rev.Value;
@@ -142,7 +142,7 @@ namespace PodioSyncer.Services
 
     private async Task<string> CreateAzureItem(Podio podio, Item item, WorkItemTrackingHttpClient witClient, CreateLink createLinkCommand, PodioApp app, bool ignoreRequirements = false)
     {
-      var patchOperations = await item.GetChangesAsync(_queryDb, witClient, podio, app, ignoreRequirements, 0);
+      var patchOperations = await item.GetChangesAsync(_queryDb, witClient, podio, app, ignoreRequirements);
       var createResult = await witClient.CreateWorkItemAsync(patchOperations, _options.AzureOptions.ProjectGuid, item.GetAzureType(app));
       var azureUrl = $"{_options.AzureOptions.ProjectUrl}/{_options.AzureOptions.ProjectGuid}/_workitems/edit/{createResult.Url.Split('/').Last()}";
 
