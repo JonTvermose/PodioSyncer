@@ -21,6 +21,7 @@ using PodioAPI.Utils.ItemFields;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
+using PodioSyncer.Data.Models;
 using PodioSyncer.Models.DevOps;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
@@ -46,7 +47,7 @@ namespace PodioSyncer.Controllers
         [HttpPost]
         [Route("webhook")]
         [AllowAnonymous]
-        public async Task<IActionResult> Webhook(AzureItem item)
+        public async Task<IActionResult> Webhook(AzureItem item, [FromServices] CreateSyncEvent createSyncEvent, [FromServices] UpdateLink updateLink)
         {            
             var link = _queryDb.Links.SingleOrDefault(x => x.AzureId == item.Resource.WorkItemId);
             if (link == null || link.AzureRevision >= item.Resource.Rev)
@@ -70,7 +71,23 @@ namespace PodioSyncer.Controllers
                         podioItem.ItemId = link.PodioId;
                         var catField = podioItem.Field<CategoryItemField>(mapping.PodioFieldName);
                         catField.OptionId = catMapping.PodioValueId;
-                        await podio.ItemService.UpdateItem(podioItem, hook: false);
+
+                        // Update revisions
+                        var podioRev = await podio.ItemService.UpdateItem(podioItem, hook: false);
+                        link.PodioRevision = podioRev.Value;
+                        link.AzureRevision = item.Resource.Rev;
+                        updateLink.InputModel = link;
+
+                        // Create sync event
+                        createSyncEvent.InputModel = new SyncEvent
+                        {
+                          AzureRevision = link.AzureRevision,
+                          PodioRevision = link.PodioRevision,
+                          SyncDate = DateTime.UtcNow,
+                          PodioAzureItemLinkId = link.Id,
+                          Initiator = Initiator.AzureHook
+                        };
+                        createSyncEvent.Run();
                     }
                     break;
             }

@@ -60,7 +60,7 @@ namespace PodioSyncer.Extensions
             return null;
         }
 
-        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app, bool ignoreRequirements)
+        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app, bool ignoreRequirements, int revision)
         {
             var patchDocument = new JsonPatchDocument();
             var podioType = item.GetPodioType(app.PodioTypeExternalId);
@@ -96,7 +96,8 @@ namespace PodioSyncer.Extensions
                 }
             }
 
-            foreach (var field in item.Fields)
+            var fieldIds = (await podio.ItemService.GetItemRevisionDifference(item.ItemId, revision, item.CurrentRevision.Revision)).Select(x => x.ExternalId);
+            foreach (var field in item.Fields.Where(x => fieldIds.Contains(x.ExternalId)))
             {
                 var mapping = mappings.SingleOrDefault(x => x.PodioFieldName == field.ExternalId);
                 if (mapping == null || (string.IsNullOrWhiteSpace(mapping.AzureFieldName) && !(mapping.FieldType == FieldType.Image || mapping.FieldType == FieldType.User)))
@@ -205,6 +206,7 @@ namespace PodioSyncer.Extensions
                 }
             }
 
+            // TODO should only attach files if they are not allready attached to Azure item
             // Handle files
             foreach (var file in item.Files)
             {

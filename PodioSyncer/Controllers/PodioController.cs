@@ -36,7 +36,10 @@ namespace PodioSyncer.Controllers
         [HttpPost]
         [Route("webhook/{appId}")]
         [AllowAnonymous]
-        public async Task<IActionResult> Webhook(int appId, PodioWebhook hook, [FromServices] VerifyWebhookCommand verifyCommand, [FromServices] CreateLink createLinkCommand, [FromServices] UpdateLink updateLinkCommand)
+        public async Task<IActionResult> Webhook(int appId, [FromForm] PodioWebhook hook, 
+          [FromServices] VerifyWebhookCommand verifyCommand, 
+          [FromServices] CreateLink createLinkCommand, 
+          [FromServices] UpdateLink updateLinkCommand)
         {
             await _syncService.HandlePodioHook(appId, hook, verifyCommand, createLinkCommand, updateLinkCommand);
             return Ok();
