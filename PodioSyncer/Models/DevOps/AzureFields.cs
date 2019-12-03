@@ -31,7 +31,7 @@ namespace PodioSyncer.Models.DevOps
         public string Tags { get; set; }
 
         [JsonPropertyName("Microsoft.VSTS.Scheduling.StoryPoints")]
-        public int StoryPoints { get; set; }
+        public double StoryPoints { get; set; }
 
         [JsonPropertyName("System.AreaPath")]
         public string AreaPath { get; set; }

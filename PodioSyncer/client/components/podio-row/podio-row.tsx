@@ -33,6 +33,12 @@ min-width: 900px;
 display: inline-block;
 `;
 
+const ScrollDiv = styled.div`
+max-height: 500px;
+overflow-y: auto;
+overflow-x: hidden;
+`;
+
 export const PodioRow: FunctionComponent<PodioRowProps> = (podioProps) => {     
     const [showSync, setShowSync] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -98,13 +104,15 @@ export const PodioRow: FunctionComponent<PodioRowProps> = (podioProps) => {
                             <div className="col-5">Azure Url</div>
                             <div className="col-2">First sync</div>
                         </div>
-                        {syncedItems.map((app, index) =>
-                            <div key={index} className="row" style={{ paddingBottom: "10px", paddingTop: "10px", backgroundColor: index % 2 == 1 ? "white" : "" }}>
-                                <div className="col-5"><a href={app.podioUrl} target="_blank"><span style={{ fontSize: "12px" }}>{app.podioUrl}</span></a></div>
-                                <div className="col-5"><a href={app.azureUrl} target="_blank"><span style={{ fontSize: "12px" }}>{app.azureUrl}</span></a></div>
-                                <div className="col-2"><span style={{ fontSize: "12px" }}>{app.syncedDate}</span></div>
-                            </div>
-                            )}
+                        <ScrollDiv className="row">
+                            {syncedItems.map((app, index) =>
+                                <div key={index} className="row" style={{ paddingBottom: "10px", paddingTop: "10px", backgroundColor: index % 2 == 1 ? "white" : "" }}>
+                                    <div className="col-5"><a href={app.podioUrl} target="_blank"><span style={{ fontSize: "12px" }}>{app.podioUrl}</span></a></div>
+                                    <div className="col-5"><a href={app.azureUrl} target="_blank"><span style={{ fontSize: "12px" }}>{app.azureUrl}</span></a></div>
+                                    <div className="col-2"><span style={{ fontSize: "12px" }}>{app.syncedDate}</span></div>
+                                </div>
+                                )}
+                        </ScrollDiv>
                         <div className="row">
                             <div className="col-12">
                                 <button className="btn btn-sm ml-2 float-right btn-secondary" onClick={() => setShowSync(false)}>Close</button>

@@ -138,6 +138,11 @@ namespace PodioSyncer.Services
       {
         // attempt at syncing podio item which does not live up to requirements set by configuration (in DB CategoryMappings).
       }
+      catch (Exception e)
+      {
+        // TODO LOGGING!
+        throw;
+      }
     }
 
     private async Task<string> CreateAzureItem(Podio podio, Item item, WorkItemTrackingHttpClient witClient, CreateLink createLinkCommand, PodioApp app, bool ignoreRequirements = false)
