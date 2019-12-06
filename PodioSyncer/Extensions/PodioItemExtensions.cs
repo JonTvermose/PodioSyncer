@@ -60,7 +60,7 @@ namespace PodioSyncer.Extensions
             return null;
         }
 
-        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app, bool ignoreRequirements)
+        public static async Task<JsonPatchDocument> GetChangesAsync(this Item item, QueryDb queryDb, WorkItemTrackingHttpClient itemClient, PodioAPI.Podio podio, PodioApp app, bool ignoreRequirements, string currentIterationName)
         {
             var patchDocument = new JsonPatchDocument();
             var podioType = item.GetPodioType(app.PodioTypeExternalId);
@@ -73,7 +73,7 @@ namespace PodioSyncer.Extensions
                 .SelectMany(x => x.FieldMappings)
                 .ToList();
 
-            if (ignoreRequirements)
+            if (!ignoreRequirements)
             {
                 foreach (var categoryField in mappings.Where(x => x.FieldType == FieldType.Category))
                 {
@@ -231,20 +231,19 @@ namespace PodioSyncer.Extensions
                 }
             }
 
-            // Set to current iteration if it's a bug and it has priority 1
-            if(patchDocument.Any(x => x.Path == "/fields/Microsoft.VSTS.Common.Priority" && x.Value.ToString() == "1") 
-                && string.Equals(item.GetAzureType(app), "bug", StringComparison.CurrentCultureIgnoreCase))
-            {
-                patchDocument.Add(
-                    new JsonPatchOperation()
-                    {
-                      Operation = Operation.Add,
-                      Path = $"/fields/System.IterationPath",
-                      Value = "Current"
-                    });
-            }
-
-            return patchDocument;
+        // Set to current iteration if it's a bug and it has priority 1
+        if (patchDocument.Any(x => x.Path == "/fields/Microsoft.VSTS.Common.Priority" && x.Value.ToString() == "1")
+            && string.Equals(item.GetAzureType(app), "bug", StringComparison.CurrentCultureIgnoreCase))
+        {
+          patchDocument.Add(
+              new JsonPatchOperation()
+              {
+                Operation = Operation.Add,
+                Path = $"/fields/System.IterationPath",
+                Value = currentIterationName
+              });
+        }
+        return patchDocument;
         }
     }
 }

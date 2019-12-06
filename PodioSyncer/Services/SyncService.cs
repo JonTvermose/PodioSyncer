@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.TeamFoundation.Core.WebApi.Types;
+using Microsoft.TeamFoundation.Work.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.Common;
@@ -53,7 +55,7 @@ namespace PodioSyncer.Services
       }
       connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
       witClient = connection.GetClient<WorkItemTrackingHttpClient>();
-      return await CreateAzureItem(podio, item, witClient, createLinkCommand, app, true);
+      return await CreateAzureItem(podio, item, witClient, createLinkCommand, app, null, true);
     }
 
     public async Task HandlePodioHook(int appId, PodioWebhook hook,
@@ -70,8 +72,12 @@ namespace PodioSyncer.Services
         Item item;
         PodioAzureItemLink link;
 
-        VssConnection connection = null;
-        WorkItemTrackingHttpClient witClient = null;
+        VssConnection connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken)); ;
+        WorkItemTrackingHttpClient witClient = connection.GetClient<WorkItemTrackingHttpClient>();
+
+        var workClient = connection.GetClient<WorkHttpClient>();
+        var tcx = new TeamContext(_options.AzureOptions.ProjectGuid, "Almego Team");
+        var currentIterationName = (await workClient.GetTeamIterationsAsync(tcx, "Current")).FirstOrDefault()?.Name;
 
         string type = null;
         switch (hook.type)
@@ -90,21 +96,17 @@ namespace PodioSyncer.Services
               // No need to create a devops item.
               return;
             }
-            connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
-            witClient = connection.GetClient<WorkItemTrackingHttpClient>();
-            await CreateAzureItem(podio, item, witClient, createLinkCommand, app);
+            await CreateAzureItem(podio, item, witClient, createLinkCommand, app, currentIterationName);
             break;
           case "item.update":
             item = await podio.ItemService.GetItem(int.Parse(hook.item_id));
             link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
             var revision = item.CurrentRevision.Revision;
             type = item.GetAzureType(app);
-            connection = new VssConnection(new Uri(_options.AzureOptions.ProjectUrl), new VssBasicCredential(string.Empty, _options.AzureOptions.AccessToken));
-            witClient = connection.GetClient<WorkItemTrackingHttpClient>();
             if (link == null && type != null)
             {
               // Will happen for items allready created before implementing this system or if their type is set to a type we should handle
-              await CreateAzureItem(podio, item, witClient, createLinkCommand, app);
+              await CreateAzureItem(podio, item, witClient, createLinkCommand, app, currentIterationName);
               return;
             }
             if (link.PodioRevision >= revision)
@@ -112,7 +114,7 @@ namespace PodioSyncer.Services
               // Allready processed this revision
               return;
             }
-            var changes = await item.GetChangesAsync(_queryDb, witClient, podio, app, false);
+            var changes = await item.GetChangesAsync(_queryDb, witClient, podio, app, false, _options.AzureOptions.ProjectGuid + @"\" + currentIterationName);
             
             var wItem = await witClient.UpdateWorkItemAsync(changes, link.AzureId);
             link.AzureRevision = wItem.Rev.Value;
@@ -145,9 +147,9 @@ namespace PodioSyncer.Services
       }
     }
 
-    private async Task<string> CreateAzureItem(Podio podio, Item item, WorkItemTrackingHttpClient witClient, CreateLink createLinkCommand, PodioApp app, bool ignoreRequirements = false)
+    private async Task<string> CreateAzureItem(Podio podio, Item item, WorkItemTrackingHttpClient witClient, CreateLink createLinkCommand, PodioApp app, string currentIterationName, bool ignoreRequirements = false)
     {
-      var patchOperations = await item.GetChangesAsync(_queryDb, witClient, podio, app, ignoreRequirements);
+      var patchOperations = await item.GetChangesAsync(_queryDb, witClient, podio, app, ignoreRequirements, _options.AzureOptions.ProjectGuid + @"\" + currentIterationName);
       var createResult = await witClient.CreateWorkItemAsync(patchOperations, _options.AzureOptions.ProjectGuid, item.GetAzureType(app));
       var azureUrl = $"{_options.AzureOptions.ProjectUrl}/{_options.AzureOptions.ProjectGuid}/_workitems/edit/{createResult.Url.Split('/').Last()}";
 
