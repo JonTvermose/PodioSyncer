@@ -38,7 +38,7 @@ namespace PodioSyncer.Middleware
             {
                 using (var reader = new StreamReader(context.HttpContext.Request.Body))
                 {
-                    var body = reader.ReadToEnd();
+                    var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
                     log.Data = body;
                 }
             }
