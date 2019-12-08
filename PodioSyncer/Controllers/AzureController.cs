@@ -22,6 +22,7 @@ using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
 using PodioSyncer.Data.Models;
+using PodioSyncer.Middleware;
 using PodioSyncer.Models.DevOps;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
@@ -31,6 +32,7 @@ namespace PodioSyncer.Controllers
     [Route("azure")]
     [ApiController]
     [Authorize]
+    [ServiceFilter(typeof(DblExceptionFilter))]
     public class AzureController : ControllerBase
     {
         private readonly QueryDb _queryDb;

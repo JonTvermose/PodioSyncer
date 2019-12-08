@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Mappings;
+using PodioSyncer.Middleware;
 using PodioSyncer.Options;
 using PodioSyncer.Services;
 
@@ -37,7 +38,8 @@ namespace PodioSyncer
         public void ConfigureServices(IServiceCollection services)
         {
             // Database
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetSection("ConnectionStrings")["DefaultConnection"]));
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<LogDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             // Authentication
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
@@ -54,6 +56,7 @@ namespace PodioSyncer
             services.AddTransient<QueryDb>();
             services.AddTransient<SyncService>();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<DblExceptionFilter>();
 
             // Commands
             services.AddTransient<VerifyWebhookCommand>();

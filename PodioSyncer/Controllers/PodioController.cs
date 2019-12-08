@@ -12,6 +12,7 @@ using PodioAPI;
 using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
+using PodioSyncer.Middleware;
 using PodioSyncer.Models.Podio;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
@@ -22,6 +23,7 @@ namespace PodioSyncer.Controllers
     [Route("podio")]
     [ApiController]
     [Authorize]
+    [ServiceFilter(typeof(DblExceptionFilter))]
     public class PodioController : ControllerBase
     {
         private readonly IMapper _mapper;

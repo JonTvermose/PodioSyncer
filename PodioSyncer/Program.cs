@@ -32,6 +32,13 @@ namespace PodioSyncer
                     {
                         context.Database.Migrate();
                     }
+
+                    var dxLogbuilder = new DbContextOptionsBuilder<LogDbContext>();
+                    dxLogbuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
+                    using (var context = new LogDbContext(dxLogbuilder.Options))
+                    {
+                        context.Database.Migrate();
+                    }
                 }
                 host.Run();
 

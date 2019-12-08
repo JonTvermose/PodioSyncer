@@ -13,6 +13,7 @@ using PodioSyncer.Data;
 using PodioSyncer.Data.Commands;
 using PodioSyncer.Data.Commands.InputModels;
 using PodioSyncer.Data.Models;
+using PodioSyncer.Middleware;
 using PodioSyncer.Models.ViewModels;
 using PodioSyncer.Options;
 using PodioSyncer.Services;
@@ -26,6 +27,7 @@ namespace PodioSyncer.Controllers
     [Route("api")]
     [ApiController]
     [Authorize]
+    [ServiceFilter(typeof(DblExceptionFilter))]
     public class ApiController: ControllerBase
     {
         private readonly QueryDb _queryDb;
