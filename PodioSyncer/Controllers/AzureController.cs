@@ -69,9 +69,17 @@ namespace PodioSyncer.Controllers
                         var mapping = _queryDb.FieldMappings.Include(x => x.CategoryMappings).FirstOrDefault(x => x.AzureFieldName == "System.State");
                         var azureValue = ((JsonElement)item.Resource.Fields.GetOrAddValue("System.State")).GetProperty("newValue").GetString();
                         var catMapping = mapping.CategoryMappings.FirstOrDefault(x => x.AzureValue == azureValue);
+                        if (catMapping == null)
+                        {
+                            return Ok();
+                        }
                         var podioItem = new Item();
                         podioItem.ItemId = link.PodioId;
                         var catField = podioItem.Field<CategoryItemField>(mapping.PodioFieldName);
+                        if (catField == null)
+                        {
+                          return Ok();
+                        }
                         catField.OptionId = catMapping.PodioValueId;
 
                         // Update revisions
