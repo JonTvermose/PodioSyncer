@@ -88,7 +88,7 @@ namespace PodioSyncer.Services
             verifyCommand.Run();
             break;
           case "item.create":
-            item = await podio.ItemService.GetItem(int.Parse(hook.item_id));
+            item = await podio.ItemService.GetItem(long.Parse(hook.item_id));
             link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
             type = item.GetAzureType(app);
             if (type == null)
@@ -99,7 +99,7 @@ namespace PodioSyncer.Services
             await CreateAzureItem(podio, item, witClient, createLinkCommand, app, currentIterationName);
             break;
           case "item.update":
-            item = await podio.ItemService.GetItem(int.Parse(hook.item_id));
+            item = await podio.ItemService.GetItem(long.Parse(hook.item_id));
             link = _queryDb.Links.SingleOrDefault(x => x.PodioId == item.ItemId);
             var revision = item.CurrentRevision.Revision;
             type = item.GetAzureType(app);
@@ -164,7 +164,7 @@ namespace PodioSyncer.Services
         PodioUrl = item.Link
       };
 
-      link.AzureRevision = await UpdateAzureComments(item, witClient, link); ;
+      link.AzureRevision = await UpdateAzureComments(item, witClient, link);
 
       createLinkCommand.InputModel = link;
       createLinkCommand.Run();

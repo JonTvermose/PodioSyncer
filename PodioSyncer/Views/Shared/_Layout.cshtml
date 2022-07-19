@@ -10,13 +10,8 @@
           content="Web site for syncing Podio items" />
     <link rel="apple-touch-icon" href="logo192.png" />
     <meta name="theme-color" content="#000000" />
-    <link rel="stylesheet" href="~/bundles/css/app.css" asp-append-version="true"/>
-</head>
-<body style="background-color: #f4f4f4">
+    <link rel="stylesheet" href="~/bundles/css/app.css" asp-append-version="true" />
 
-    @RenderBody()
-
-    <script src="~/bundles/app.js" asp-append-version="true"></script>
     <script>
         var jsonRoutes = {
             getpodioapps: '@Url.Action("GetPodioApps", "Api")',
@@ -26,9 +21,16 @@
             syncpodioitem: '@Url.Action("SyncPodioItem", "Api")',
             getlinks: '@Url.Action("GetLinks", "Api")',
             getsyncevents: '@Url.Action("GetSyncEvents", "Api")',
-            createlink: '@Url.Action("CreateLink", "Api")',            
+            createlink: '@Url.Action("CreateLink", "Api")',
         };
     </script>
+</head>
+<body style="background-color: #f4f4f4">
+
+    @RenderBody()
+
+    <script src="~/bundles/app.js" asp-append-version="true"></script>
+
     @RenderSection("Scripts", required: false)
 </body>
 </html>
