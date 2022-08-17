@@ -38,7 +38,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="16.153.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
-    <PackageReference Include="Tvermose.Podio.Async" Version="2.0.5" />
+    <PackageReference Include="Tvermose.Podio.Async" Version="2.0.6" />
   </ItemGroup>
 
   <ItemGroup>
